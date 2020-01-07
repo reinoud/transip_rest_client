@@ -1,0 +1,5 @@
+.idea/
+_build/
+venv/
+transip_rest_client/tests/auth_setup.py
+*.pyc
