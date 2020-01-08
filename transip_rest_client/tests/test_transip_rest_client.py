@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, expectedFailure
 try:
     from auth_setup import transipaccount, testdomain, RSAkey
 except:
@@ -12,7 +12,7 @@ except:
     exit(1)
 
 from utils_for_test import random_string
-from transip_rest_client import TransipRestClient, TransIPRestResponseException
+from transip_rest_client import TransipRestClient, TransIPRestResponseException, TransipTokenAuthorisationException
 
 
 class TestTransipRestClient(TestCase):
@@ -114,3 +114,10 @@ class TestTransipRestClient(TestCase):
         hostnames = [x['name'] for x in dns_entries]
         self.assertNotIn(hostname, hostnames,
                          msg="expected hostname to be deleted after calling delete_dns_entry")
+
+    def test_invalidkey(self):
+        wrongkey = RSAkey[:50] + random_string() + RSAkey[60:]
+        with self.assertRaises(TransipTokenAuthorisationException):
+            non_authorizing_transip_client = TransipRestClient(user=transipaccount, RSAprivate_key=wrongkey)
+        print("foo")
+

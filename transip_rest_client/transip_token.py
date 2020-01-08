@@ -14,6 +14,10 @@ DEFAULT_AUTH_URL = 'https://api.transip.nl/v6/auth'
 DEFAULT_EXPIRATION_TIME = '30 minutes'
 
 
+class TransipTokenAuthorisationException(Exception):
+    pass
+
+
 class TransipTokenPrivateKeyFormatException(Exception):
     pass
 
@@ -25,6 +29,13 @@ class TransipTokenGeneralException(Exception):
 class TransipToken(object):
     """A class to manage the needed token for the TransIP REST API.
     as documented on https://api.transip.nl/rest/docs.html#header-authentication
+
+    The steps taken are:
+    - create a request body (including a random 'nonce' field and label(s))
+    - create a signature by encrypting this request body with the private key
+    - send a request to the auth endpoint with the request body and signature
+      (this proves that we have the private key since TransIP can decrypt it with the public key)
+    - a token is sent back to us by TransIP that can be used until it expires
     """
     def __init__(self,
                  login: str,
@@ -42,50 +53,53 @@ class TransipToken(object):
             label: label for key (see TransIP documentation)
             auth_url: TransIP URL to authenticate to
         """
-        self.login = login
-        self.private_key = self._fix_key(RSAprivate_key)
-        self.global_key = global_key
-        self.read_only = read_only
-        self.label = label
-        self.auth_url = auth_url
-        self.expiration_time = DEFAULT_EXPIRATION_TIME  # since the format is not documented, we only use the default
-        self.token = None
-        self.token_date = None
-        self.request_body = None
+        self._login = login
+        self._private_key = self._fix_key(RSAprivate_key)
+        self._global_key = global_key
+        self._read_only = read_only
+        self._label = label
+        self._auth_url = auth_url
+        self._expiration_time = DEFAULT_EXPIRATION_TIME  # since the format is not documented, we only use the default
+        self._token = None
+        self._token_date = None
+        self._request_body = None
 
     def set_label(self, label: str):
         """Set a label. This will invalidate the existing token, so a new one will have to be generated
         Args:
             label: a string with the label
         """
-        if self.label != label:
-            self.label = label
-            self.token = None
+        if self._label != label:
+            self._label = label
+            self._token = None
 
     def get_token(self):
         if not self._valid_token():
             self._create_token()
-        return self.token
+        return self._token
 
     def __repr__(self):
         return self.get_token()
 
     def invalidate(self):
         """enable outside world to invalidate the token so a new one will be generated next time"""
-        self.token = None
-        self.token_date = None
+        self._token = None
+        self._token_date = None
 
     def _create_token(self):
         body = self._create_request_body()
         headers = {'Content-Type': 'application/json',
                    'Signature': self.signature}
         try:
-            response = requests.post(url=self.auth_url, data=body, headers=headers)
+            response = requests.post(url=self._auth_url, data=body, headers=headers)
         except Exception as e:
             raise TransipTokenGeneralException(f'Error during request of token: {e}')
+        if response.status_code == 401:
+            errorreason = json.loads(response.content)['error']
+            raise TransipTokenAuthorisationException(f'Error with authentication: {errorreason}, please check private key')
         try:
-            self.token = response.json()['token']
-            self.token_date = datetime.datetime.now()
+            self._token = response.json()['token']
+            self._token_date = datetime.datetime.now()
         except Exception as e:
             raise TransipTokenGeneralException(f'TransIP API did not return expected token: {e}')
 
@@ -94,17 +108,17 @@ class TransipToken(object):
         a token is valid until 25 minutes after creation. Since we do not know the format for specifying another
         duration that 30 minutes, this is hard-coded
         """
-        return self.token is not None \
-               and self.token_date is not None \
-               and (datetime.datetime.now() - self.token_date).seconds < 1500
+        return self._token is not None \
+               and self._token_date is not None \
+               and (datetime.datetime.now() - self._token_date).seconds < 1500
 
     def _create_request_body(self):
-        request_body = {'login': self.login,
+        request_body = {'login': self._login,
                         'nonce': uuid.uuid1().hex[:10],  # a random string
-                        'read_only': self.read_only,
-                        'expiration_time': self.expiration_time,
-                        'label': self.label,
-                        'global_key': self.global_key
+                        'read_only': self._read_only,
+                        'expiration_time': self._expiration_time,
+                        'label': self._label,
+                        'global_key': self._global_key
                         }
         self.request_body_dict = request_body
         self.request_body_string = json.dumps(request_body)
@@ -114,7 +128,7 @@ class TransipToken(object):
     def _create_signature(self):
         """ Uses the private key to sign the request body. """
         private_key = serialization.load_pem_private_key(
-            str.encode(self.private_key),
+            str.encode(self._private_key),
             password=None,
             backend=default_backend())
         signature = private_key.sign(
