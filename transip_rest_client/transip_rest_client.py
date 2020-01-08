@@ -49,9 +49,9 @@ class TransipRestClient(GenericRestClient):
 
     def _update_bookkeeping(self, headers):
         """ expose the API limits to whom it may concern """
-        self.rate_limit_limit = int(headers['X-Rate-Limit-Limit'])
-        self.rate_limit_remaining = int(headers['X-Rate-Limit-Remaining'])
-        self.rate_limit_reset = int(headers['X-Rate-Limit-Reset'])
+        self.rate_limit_limit = int(headers.get('X-Rate-Limit-Limit', '0'))
+        self.rate_limit_remaining = int(headers.get('X-Rate-Limit-Remaining', '0'))
+        self.rate_limit_reset = int(headers.get('X-Rate-Limit-Reset', '0'))
 
     def _request(self, relative_endpoint, verb, params, expected_http_codes=None) -> dict:
         endpoint = f'{self.base_url}{relative_endpoint}'
@@ -61,6 +61,7 @@ class TransipRestClient(GenericRestClient):
                       'delete': super().delete_request}
         if verb not in super_func.keys():
             raise TransipRestException('verb "{verb}" not allowed in _do_request')
+        expected_http_codes = list(set(expected_http_codes + [401]))
         request_headers_status = super_func[verb](endpoint=endpoint, params=params,
                                                  expected_http_codes=expected_http_codes,
                                                  extra_headers=self._transip_headers())
@@ -68,6 +69,9 @@ class TransipRestClient(GenericRestClient):
         headers = request_headers_status[1]
         statuscode = request_headers_status[2]
         self._update_bookkeeping(headers)
+        if statuscode == 401:
+            errormsg = json.loads(jsonstr)['error']
+            raise TransIPRestResponseException(statuscode=statuscode, errormsg=errormsg)
         if statuscode >= 400:
             returnederror = json.loads(jsonstr)['error']
             errorcontext = f"http-action: '{verb}' endpoint: '{relative_endpoint}'"

@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 
 try:
     from auth_setup import transipaccount, testdomain, RSAkey
@@ -18,17 +18,16 @@ from transip_rest_client.transip_token import TransipToken, TransipTokenPrivateK
 class TestTransipToken(TestCase):
     def setUp(self) -> None:
         self.token = TransipToken(login=transipaccount, RSAprivate_key=RSAkey)
-        pass
 
     def test_set_label(self):
-        oldlabel = self.token.label
+        oldlabel = self.token._label
         oldtoken = self.token.get_token()
         while True:
             newlabel = random_string()
             if newlabel != oldlabel:
                 break
         self.token.set_label(newlabel)
-        new_returned_label = self.token.label
+        new_returned_label = self.token._label
         newtoken = self.token.get_token()
         self.assertEqual(new_returned_label, newlabel,
                          msg="expected the set label being equal to the returned label")

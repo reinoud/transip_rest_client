@@ -166,7 +166,7 @@ class GenericRestClient:
         if response.status_code == 401:
             errmsg = response.content
             raise RequestFailureException(errmsg)
-        if 401 < response.status_code < 500:
+        if 400 <= response.status_code < 500:
             errmsg = 'API returned HTTP 4xx error'
 
             logger.error(errmsg, extra={
