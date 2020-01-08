@@ -163,7 +163,10 @@ class GenericRestClient:
         if response.status_code in expected_http_codes:
             return response.content, response.headers, response.status_code
 
-        if 400 <= response.status_code < 500:
+        if response.status_code == 401:
+            errmsg = response.content
+            raise RequestFailureException(errmsg)
+        if 401 < response.status_code < 500:
             errmsg = 'API returned HTTP 4xx error'
 
             logger.error(errmsg, extra={
@@ -224,7 +227,7 @@ class GenericRestClient:
 
         Args:
             endpoint (string): portion of the endpoint for the service
-            body_params (dict): a valid data object
+            params (dict): a valid data object
             expected_http_codes list(int): expected codes for the request
         Returns:
             The response offered by the requests library when using post
@@ -260,7 +263,7 @@ class GenericRestClient:
 
         Args:
             endpoint (string): name of the service
-            body_params (dict): information to be updated
+            params (dict): information to be updated
             expected_http_codes list(int): expected codes for the request
         Returns:
             The response offered by the requests library when using post
@@ -278,7 +281,7 @@ class GenericRestClient:
 
         Args:
             endpoint (string): name of the service
-            body_params (dict): information to be updated
+            params (dict): information to be updated
             expected_http_codes list(int): expected codes for the request
         Returns:
             The response offered by the requests library when using post

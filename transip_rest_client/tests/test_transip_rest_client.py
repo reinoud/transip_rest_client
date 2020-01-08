@@ -15,8 +15,6 @@ from utils_for_test import random_string
 from transip_rest_client import TransipRestClient, TransIPRestResponseException
 
 
-
-
 class TestTransipRestClient(TestCase):
     def setUp(self) -> None:
         self.transip_client = TransipRestClient(user=transipaccount, RSAprivate_key=RSAkey)
