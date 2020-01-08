@@ -22,22 +22,29 @@ class TestTransipToken(TestCase):
 
     def test_set_label(self):
         oldlabel = self.token.label
+        oldtoken = self.token.get_token()
         while True:
             newlabel = random_string()
             if newlabel != oldlabel:
                 break
         self.token.set_label(newlabel)
         new_returned_label = self.token.label
+        newtoken = self.token.get_token()
         self.assertEqual(new_returned_label, newlabel,
                          msg="expected the set label being equal to the returned label")
+        self.assertNotEqual(oldtoken, newtoken,
+                            msg="expected new token after setting new label")
 
     def test_get_token(self):
         token = self.token.get_token()
-        self.assertIsInstance(token, str)
-        self.assertGreater(len(token), 1)
+        self.assertIsInstance(token, str,
+                              msg="expected returned token to be a string")
+        self.assertGreater(len(token), 1,
+                           msg="expected a token longer than 1")
 
     def test_invalidate(self):
-        token = self.token.get_token()
+        oldtoken = self.token.get_token()
         self.token.invalidate()
         newtoken = self.token.get_token()
-        self.assertNotEqual(token, newtoken)
+        self.assertNotEqual(oldtoken, newtoken,
+                            msg="expeted a new token after previous one was invalidated")
