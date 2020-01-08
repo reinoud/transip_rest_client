@@ -47,3 +47,17 @@ output::
 
 getting tests working
 ---------------------
+Since TransIP does not provide a test environment nor a key to test with, the unittests depend on your credentials and
+are not supplied. The Unittests expect a file auth_setup.py to be present in the test directory with credentials. It
+should look like this::
+
+    transipaccount = 'myaccount'
+    RSAkey = '-----BEGIN RSA PRIVATE KEY-----\n<myRSAKey>\n-----END RSA PRIVATE KEY-----'
+    testdomain = 'mydomain.com'
+
+The tests do not (yet) provide a stub for offline-testing
+
+Status
+------
+As of january 2020, the client is not complete; only DNS features have been implemented. Other functionality can (and
+will) be added to transip_rest_client.py
