@@ -26,7 +26,6 @@ class UnknownResultException(Exception):
 
 
 class UnknownVerbException(Exception):
-
     """Raised when a unknown verb is used for a request"""
     pass
 
@@ -49,6 +48,7 @@ requestfunction = {
 
 
 class GenericRestClient:
+    """Generic REST client"""
     def __init__(self,
                  base_url: str,
                  user: str,
@@ -68,37 +68,36 @@ class GenericRestClient:
                     expected_http_codes:list=None,
                     extra_headers:dict=None):
         """Create a payload and send a new post request to the url given
-        Args:
-            endpoint (string): portion of the endpoint for the service
-            params (dict): a valid data object
-            call_type (string): one of "get" or "post"
-            expected_http_codes list(int): expected codes for the request
-            extra_headers (dict): extra headers needed
-        Raises:
-            RequestFailureException
-            UnknownResultException
-            UnknownVerbException
-        Returns:
-            The response offered by the requests library when using get or post
+
+        :param endpoint: portion of the endpoint for the service
+        :type endpoint: str
+        :param params: a valid data object
+        :type params: dict
+        :param call_type: one of "get", "post", "put", "patch", "delete"
+        :type call_type: str
+        :param expected_http_codes: expected codes for the request
+        :type expected_http_codes: list
+        :param extra_headers: extra headers needed
+        :type extra_headers: dict
+
+        :raise RequestFailureException:
+        :raise RequestFailureException:
+        :raise UnknownResultException:
+        :raise UnknownVerbException: wrong verb called
+
+        :return: a tuple consisting of:
+
+        - The response offered by the requests library when using get or post
+        - The response headers
+        - The response status code
+
         """
         if expected_http_codes is None:
             expected_http_codes = [200]
         if extra_headers is None:
             extra_headers = {}
         url = urljoin(self.base_url, endpoint)
-        call_headers = self.headers.update(extra_headers)
         try:
-            # blah = requests.get    (url, params,kwargs)
-            # blah = requests.post   (url, data,json,kwargs)
-            # blah = requests.patch  (url, data, kwargs)
-            #bla = requests.pa
-            # blah = requests.put    (url, data, kwargs)
-            # blah = requests.options(url, kwargs)
-            # blah = requests.delete (url, kwargs)
-            # blah = requests.head   (url,kwargs)
-
-            # this seems like an ugly construct, but some of the calls have slightly different parameters so this
-            # is hard to generalize.
             if call_type == 'get':
                 response = requests.get(
                     url,
@@ -209,12 +208,16 @@ class GenericRestClient:
                     extra_headers: dict = None):
         """Create a payload and send a new post request to the given url
 
-        Args:
-            endpoint (string): portion of the endpoint for the service
-            params (dict): a valid data object
-            expected_http_codes list(int): expected codes for the request
-        Returns:
-            The response offered by the requests library when using get
+        :param endpoint: portion of the endpoint for the service
+        :type endpoint: str
+        :param params: a valid data object
+        :type params: dict
+        :param expected_http_codes: expected codes for the request
+        :type expected_http_codes: list
+        :param extra_headers: extra http headers needed for this request
+        :type extra_headers: dict
+
+        :return: The response offered by the requests library when using get
         """
         return self._do_request(endpoint, params, 'get', expected_http_codes, extra_headers)
 
@@ -225,12 +228,16 @@ class GenericRestClient:
                      extra_headers: dict = None):
         """Create a payload and send a new post request to the given url
 
-        Args:
-            endpoint (string): portion of the endpoint for the service
-            params (dict): a valid data object
-            expected_http_codes list(int): expected codes for the request
-        Returns:
-            The response offered by the requests library when using post
+        :param endpoint: portion of the endpoint for the service
+        :type endpoint: str
+        :param params: a valid data object
+        :type params: dict
+        :param expected_http_codes: expected codes for the request
+        :type expected_http_codes: list
+        :param extra_headers: extra http headers needed for this request
+        :type extra_headers: dict
+
+        :return: The response offered by the requests library when using get
         """
         return self._do_request(
             endpoint,
@@ -241,14 +248,18 @@ class GenericRestClient:
         )
 
     def put_request(self, endpoint, params, expected_http_codes=None, extra_headers=None):
-        """Sends a request to update an element
+        """Create a payload and send a new post request to the given url
 
-        Args:
-            endpoint (string): name of the service
-            params (dict): information to be updated
-            expected_http_codes list(int): expected codes for the request
-        Returns:
-            The response offered by the requests library when using post
+        :param endpoint: portion of the endpoint for the service
+        :type endpoint: str
+        :param params: a valid data object
+        :type params: dict
+        :param expected_http_codes: expected codes for the request
+        :type expected_http_codes: list
+        :param extra_headers: extra http headers needed for this request
+        :type extra_headers: dict
+
+        :return: The response offered by the requests library when using get
         """
         return self._do_request(
             endpoint,
@@ -259,14 +270,18 @@ class GenericRestClient:
         )
 
     def patch_request(self, endpoint, params, expected_http_codes=None, extra_headers=None):
-        """Sends a request to partially update an element
+        """Create a payload and send a new post request to the given url
 
-        Args:
-            endpoint (string): name of the service
-            params (dict): information to be updated
-            expected_http_codes list(int): expected codes for the request
-        Returns:
-            The response offered by the requests library when using post
+        :param endpoint: portion of the endpoint for the service
+        :type endpoint: str
+        :param params: a valid data object
+        :type params: dict
+        :param expected_http_codes: expected codes for the request
+        :type expected_http_codes: list
+        :param extra_headers: extra http headers needed for this request
+        :type extra_headers: dict
+
+        :return: The response offered by the requests library when using get
         """
         return self._do_request(
             endpoint,
@@ -277,14 +292,18 @@ class GenericRestClient:
         )
 
     def delete_request(self, endpoint, params, expected_http_codes=None, extra_headers=None):
-        """Sends a request to partially update an element
+        """Create a payload and send a new post request to the given url
 
-        Args:
-            endpoint (string): name of the service
-            params (dict): information to be updated
-            expected_http_codes list(int): expected codes for the request
-        Returns:
-            The response offered by the requests library when using post
+        :param endpoint: portion of the endpoint for the service
+        :type endpoint: str
+        :param params: a valid data object
+        :type params: dict
+        :param expected_http_codes: expected codes for the request
+        :type expected_http_codes: list
+        :param extra_headers: extra http headers needed for this request
+        :type extra_headers: dict
+
+        :return: The response offered by the requests library when using get
         """
         return self._do_request(
             endpoint,
