@@ -6,25 +6,31 @@ Documentation about the Python3 TransIP REST CLient
 
 Release v\ |version|.
 
-.. toctree::
-    :maxdepth: 2
-    :caption: Contents:
-
-
 
 TransipRestClient
 =================
-.. automodule:: transip_rest_client.transip_rest_client
-    :members:
 
-.. automodule:: transip_rest_client.transip_token
-    :members:
+These are the classes that are important:
 
-.. automodule:: transip_rest_client.generic_rest_client
-    :members:
+.. toctree::
+    :maxdepth: 2
 
-.. automodule:: transip_rest_client.transip_rest_client_exceptions
-    :members:
+    transip_rest_client
+    transip_token
+    generic_rest_client
+    transip_rest_client_exceptions
+
+Synopsis
+========
+
+.. code-block:: python
+
+    from transip_rest_client import TransipRestClient
+    account = 'myaccount'
+    with open('rsaprivatekey.txt', 'r') as f:
+        key = f.read()
+    client = TransipRestClient(user=account, RSAprivate_key=key)
+    print(client.ping())
 
 
 Indices and tables
