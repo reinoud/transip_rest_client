@@ -1,12 +1,13 @@
 from setuptools import setup
+from transip_rest_client.__version__ import __version__, __name__, __author__, __author_email__, __description__
 
 setup(
-    name='transip_rest_client',
-    version='0.1',
-    packages=['transip_rest_client', 'transip_rest_client.tests'],
+    name=__name__,
+    version=__version__,
+    packages=['transip_rest_client'],
     url='',
     license='',
-    author='Startmail.com',
-    author_email='root@startmail.com',
-    description='Python3 Rest client for TransIP API'
+    author=__author__,
+    author_email=__author_email__,
+    description=__description__
 )
