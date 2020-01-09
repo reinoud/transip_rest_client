@@ -12,24 +12,20 @@
 #
 import os
 import sys
-# sys.path.append(os.path.abspath('.'))
-# sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.abspath('..'))
 sys.path.append(os.path.abspath('../..'))
-#sys.path.append(os.path.abspath('../../transip_rest_client'))
 
 sys.setrecursionlimit(1500)
 
 import transip_rest_client
 
 # -- Project information -----------------------------------------------------
+# this is put in a single source: __version__.py
 
-project = 'TransIP REST API client'
-copyright = '2020, Startmail.com'
-author = 'Startmail.com'
-
-# The full version, including alpha/beta/rc tags
-release = '0.1'
-
+project = transip_rest_client.__title__
+copyright = transip_rest_client.__copyright__
+author = transip_rest_client.__author__
+version = release = transip_rest_client.__version__
 
 # -- General configuration ---------------------------------------------------
 
@@ -66,4 +62,3 @@ html_static_path = ['_static']
 master_doc = "index"
 autoclass_content = 'both'
 
-version = transip_rest_client.__version__
