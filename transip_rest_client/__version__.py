@@ -1,0 +1,7 @@
+__name__ = 'transip_rest_client'
+__title__ = 'TransIP REST API client'
+__description__ = 'a Python3 implementation for the TransIP REST API'
+__version__ = '0.1'
+__author__ = 'Startmail.com'
+__author_email__ = 'root@startmail.com'
+__copyright__ = 'Copyright 2020 Startmail.com'

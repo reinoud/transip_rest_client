@@ -3,6 +3,7 @@ import json
 from .generic_rest_client import GenericRestClient
 from .transip_token import TransipToken, TransipTokenPrivateKeyFormatException, TransipTokenGeneralException
 from .transip_rest_client_exceptions import TransipRestException, TransIPRestResponseException
+from .__version__ import __version__
 
 ALLOWED_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP', 'TLSA', 'CAA']
 ALLOWED_VERBS = ['get', 'post', 'patch', 'put', 'delete']
@@ -17,19 +18,33 @@ class TransipRestprivatekeyException(Exception):
 class TransipRestClient(GenericRestClient):
     """Python abstraction of the TransIP Rest API
 
-    In general:
+    General implementation considerations:
+
     - a get request returns a (possible nested) dict or list (can be empty)
     - a post/put/patch request will not return anything
     - exceptions will be raised if needed. Exceptions are based on TransipRestException
     - 'related resources' are discarded
 
-    TransIP documentation can be found at https://api.transip.nl/rest/docs.html
+    TransIP documentation: https://api.transip.nl/rest/docs.html
     """
     def __init__(self,
                  user: str,
                  RSAprivate_key: str,
                  base_url: str = DEFAULT_API_URL,
                  timeout: int = 10):
+        """
+        :param user: accountname for TransIP
+        :type user: str
+        :param RSAprivate_key: The (converted to) RSA Private key for this account
+        :type name: str
+        :param base_url: URL to authenticate to. default https://api.transip.nl/v6
+        :type base_url: str
+        :param timeout: timeout for connection in seconds
+        :type type: int
+
+        |
+        """
+
         try:
             self.token = TransipToken(login=user, RSAprivate_key=RSAprivate_key)
         except (TransipTokenPrivateKeyFormatException, TransipTokenGeneralException) as e:
@@ -45,7 +60,7 @@ class TransipRestClient(GenericRestClient):
     def _transip_headers(self):
         headers = {"Content-Type": "application/json",
                    "Authorization": f'Bearer {self.token}',
-                   "User-Agent": "TransIPPythonRestClient/0.1"}
+                   "User-Agent": f"TransIPPythonRestClient/{__version__}"}
         return headers
 
     def _update_bookkeeping(self, headers):
@@ -86,20 +101,27 @@ class TransipRestClient(GenericRestClient):
     def get_products(self) -> dict:
         """ Returns all available products currently offered by TransIP.
 
-        :returns:
+        TransIP documentation: https://api.transip.nl/rest/docs.html#general-products-get
+
+        :rtype: dict
+        :return:
+
             A dict with information about TransIP products and prices
-            example:
-                { 'bigStorage': [ { 'description': 'Big Storage Disk 2000 GB',
-                                    'name': 'volume-storage-contract',
-                                    'price': 10,
-                                    'recurringPrice': 10},
-                                  { 'description': '2000 GB extra Big Storage',
-                                    'name': 'volume-storage-addon-contract',
-                                    'price': 10}
-                                 ]
+
+            example::
+
+                { 'bigStorage':
+                  [ { 'description': 'St Disk 2000 GB',
+                      'name': 'vol-storage-contr',
+                      'price': 10,
+                      'recurringPrice': 10},
+                    { 'description': '2000 GB',
+                      'name': 'vol-storage-addon-contr',
+                      'price': 10}
+                  ]
                 }
 
-        https://api.transip.nl/rest/docs.html#general-products-get
+
         """
         request = self._request(relative_endpoint='/products', verb='get', params=None,
                                 expected_http_codes=[200, ])
@@ -108,7 +130,8 @@ class TransipRestClient(GenericRestClient):
     def ping(self) -> str:
         """ A simple test resource to check everything is working
 
-        :returns:
+        :rtype: str
+        :return:
             a string containing 'pong' when connection and authentication is working
         """
         request = self._request(relative_endpoint='/api-test', verb='get', params=None,
@@ -118,24 +141,27 @@ class TransipRestClient(GenericRestClient):
     def get_domains(self) -> dict:
         """ Returns all domains present in this TransIP account
 
-        :returns:
-            A list of dicts, each list entry contains a dict with administrative details about a domain
-            example:
-            [ { 'authCode': 'V496K%3A7N',
-                'cancellationDate': None,
-                'cancellationStatus': None,
-                'hasActionRunning': False,
-                'isDnsOnly': False,
-                'isTransferLocked': False,
-                'isWhitelabel': False,
-                'name': 'example.com',
-                'registrationDate': '2019-12-10',
-                'renewalDate': '2020-12-10',
-                'supportsLocking': True,
-                'tags': ['mytag']}
-            ]
+        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-domains-get
 
-        https://api.transip.nl/rest/docs.html#domains-domains-get
+        :rtype: str
+        :return:
+            A list of dicts, each list entry contains a dict with administrative details about a domain
+
+            example::
+
+                [ { 'authCode': 'V496K%3A7N',
+                    'cancellationDate': None,
+                    'cancellationStatus': None,
+                    'hasActionRunning': False,
+                    'isDnsOnly': False,
+                    'isTransferLocked': False,
+                    'isWhitelabel': False,
+                    'name': 'example.com',
+                    'registrationDate': '2019-12-10',
+                    'renewalDate': '2020-12-10',
+                    'supportsLocking': True,
+                    'tags': ['mytag']}
+                ]
         """
         request = self._request(relative_endpoint='/domains', verb='get', params=None,
                                 expected_http_codes=[200, ])
@@ -144,27 +170,30 @@ class TransipRestClient(GenericRestClient):
     def get_domain(self, domain: str = None) -> dict:
         """ Returns administrative information about a signle domain
 
-        :argument:
-            domain: an existing DNS domain
+        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-domains-get-1
 
-        :returns:
+        :param domain: an existing DNS domain
+        :type domain: str
+
+        :rtype: dict
+        :return:
             A dict with administrative details about the domain
-            example:
-            { 'authCode': 'V496K%3A7N',
-               'cancellationDate': None,
-               'cancellationStatus': None,
-               'hasActionRunning': False,
-               'isDnsOnly': False,
-               'isTransferLocked': False,
-               'isWhitelabel': False,
-               'name': 'example.com',
-               'registrationDate': '2019-12-10',
-               'renewalDate': '2020-12-10',
-               'supportsLocking': True,
-               'tags': ['mytag']
-            }
 
-        https://api.transip.nl/rest/docs.html#domains-domains-get-1
+            example::
+
+                { 'authCode': 'V496K%3A7N',
+                  'cancellationDate': None,
+                  'cancellationStatus': None,
+                  'hasActionRunning': False,
+                  'isDnsOnly': False,
+                  'isTransferLocked': False,
+                  'isWhitelabel': False,
+                  'name': 'example.com',
+                  'registrationDate': '2019-12-10',
+                  'renewalDate': '2020-12-10',
+                  'supportsLocking': True,
+                  'tags': ['mytag']
+                }
         """
         if domain is None:
             return {}
@@ -176,23 +205,26 @@ class TransipRestClient(GenericRestClient):
     def get_dns_entries(self, domain: str = None) -> dict:
         """ Returns DNS records for a domain
 
-        :argument:
-            domain (str): an existing DNS domain (e.g. 'example.com')
+        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-dns-get
 
+        :param domain: an existing DNS domain (e.g. 'example.com')
+        :type domain: str
+
+        :rtype: dict
         :returns:
             a list of dicts describing the DNS records in this zone
-            example:
-            [ {'content': '37.97.254.27',
-               'expire': '300',
-               'name': '@',
-               'type': 'A'},
-              { 'content': '2a01:7c8:3:1337::27',
-                'expire': '300',
-                'name': '@',
-                'type': 'AAAA'}
-            ]
 
-        https://api.transip.nl/rest/docs.html#domains-dns-get
+            example::
+
+                [ {'content': '37.97.254.27',
+                   'expire': '300',
+                   'name': '@',
+                   'type': 'A'},
+                  { 'content': '2a01:7c8:3:1337::27',
+                    'expire': '300',
+                    'name': '@',
+                    'type': 'AAAA'}
+                ]
         """
         if domain is None:
             return {}
@@ -208,18 +240,23 @@ class TransipRestClient(GenericRestClient):
                        content: str = None) -> None:
         """ Add a DNS record to an existing DNS zone
 
-        :argument:
-            domain (str): an existing DNS domain (e.g. 'example.com')
-            name (str): the name of the record (e.g. 'www')
-            expire (int): expiry in seconds for caching this record (e.g. 86400)
-            type (str): a valid DNS type (e.g. 'A', 'AAAA', 'TXT')
-            content (str): valid content for this type of DNS record (e.g. '127.0.0.1' for an 'A'-type record)
+        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-dns-post
 
-        :raises:
-            TransipRestException: not all required arguments are passed
-            TransipRestException: when an invalid type is passed
+        :param domain: an existing DNS domain (e.g. 'example.com')
+        :type domain: str
+        :param name: the name of the record (e.g. 'www')
+        :type name: str
+        :param expire: expiry in seconds for caching this record (e.g. 86400)
+        :type expire: int
+        :param type: a valid DNS type (e.g. 'A', 'AAAA', 'TXT')
+        :type type: str
+        :param content: valid content for this type of DNS record (e.g. '127.0.0.1' for an 'A'-type record)
+        :type content: str
 
-        https://api.transip.nl/rest/docs.html#domains-dns-post
+        :rtype: None
+
+        :raise TransipRestException: not all required arguments are passed
+        :raise TransipRestException: when an invalid type is passed
         """
         if domain is None or expire is None or name is None or type is None or content is None:
             raise TransipRestException('post_dns_entry called without all required parameters')
@@ -241,20 +278,25 @@ class TransipRestClient(GenericRestClient):
                        content: str = None) -> None:
         """ Update the content of a single DNS entry, identified by the name, expire, type attributes.
 
-        :argument:
-            domain (str): an existing DNS domain (e.g. 'example.com')
-            name (str): the name of the record (e.g. 'www')
-            expire (int): expiry in seconds for caching this record (e.g. 86400)
-            type (str): a valid DNS type (e.g. 'A', 'AAAA', 'TXT')
-            content (str): new content for this  DNS record (e.g. '127.0.0.1' for an 'A'-type record)
-
-        :raises:
-            TransipRestException: not all required arguments are passed
-            TransipRestException: when an invalid type is passed
-
-
         When multiple or none of the current DNS entries matches, an exception will be thrown.
-        https://api.transip.nl/rest/docs.html#domains-dns-patch
+
+        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-dns-patch
+
+        :param domain: an existing DNS domain (e.g. 'example.com')
+        :type domain: str
+        :param name: the name of the record (e.g. 'www')
+        :type name: str
+        :param expire: expiry in seconds for caching this record (e.g. 86400)
+        :type expire: int
+        :param type: a valid DNS type (e.g. 'A', 'AAAA', 'TXT')
+        :type type: str
+        :param content: new content for this  DNS record (e.g. '127.0.0.1' for an 'A'-type record)
+        :type content: str
+
+        :rtype: None
+
+        :raise TransipRestException: not all required arguments are passed
+        :raise TransipRestException: when an invalid type is passed
         """
         if domain is None or expire is None or name is None or type is None or content is None:
             raise TransipRestException('patch_dns_entry called without all required parameters')
@@ -276,15 +318,19 @@ class TransipRestClient(GenericRestClient):
                        content: str = None) -> None:
         """ Remove a single DNS entry in an existing DNS zone
 
-        :argument:
-            domain (str): an existing DNS domain (e.g. 'example.com')
-            name (str): the name of the record (e.g. 'www')
-            expire (int): expiry in seconds for caching this record (e.g. 86400)
-            type (str): a valid DNS type (e.g. 'A', 'AAAA', 'TXT')
-            content (str): current content for this  DNS record
+        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-dns-delete
 
-
-        https://api.transip.nl/rest/docs.html#domains-dns-delete
+        :param domain: an existing DNS domain (e.g. 'example.com')
+        :type domain: int
+        :param name: the name of the record (e.g. 'www')
+        :type name: str
+        :param expire: expiry in seconds for caching this record (e.g. 86400)
+        :type expire: int
+        :param type: a valid DNS type (e.g. 'A', 'AAAA', 'TXT')
+        :type type: str
+        :param content: current content for this  DNS record
+        :type content: str
+        :rtype: None
         """
         if domain is None or expire is None or name is None or type is None or content is None:
             raise TransipRestException('delete_dns_entry called without all required parameters')

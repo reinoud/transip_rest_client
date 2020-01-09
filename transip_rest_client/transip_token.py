@@ -15,14 +15,22 @@ DEFAULT_EXPIRATION_TIME = '30 minutes'
 
 
 class TransipTokenAuthorisationException(Exception):
+    """Raised when authorisation at TransIP fails. Usually this means that there is something wrong with the used
+    private key (is it converted to RSA?). Whitelisting problems raise another exception.
+    """
     pass
 
 
 class TransipTokenPrivateKeyFormatException(Exception):
+    """Raised when the supplied private key does not look correct
+    """
     pass
 
 
 class TransipTokenGeneralException(Exception):
+    """Raised when something is wrong during the request of a token. There should be more information in the content
+    of the exception
+    """
     pass
 
 
@@ -31,11 +39,14 @@ class TransipToken(object):
     as documented on https://api.transip.nl/rest/docs.html#header-authentication
 
     The steps taken are:
+
     - create a request body (including a random 'nonce' field and label(s))
     - create a signature by encrypting this request body with the private key
     - send a request to the auth endpoint with the request body and signature
       (this proves that we have the private key since TransIP can decrypt it with the public key)
     - a token is sent back to us by TransIP that can be used until it expires
+
+    |
     """
     def __init__(self,
                  login: str,
@@ -45,13 +56,20 @@ class TransipToken(object):
                  label: str = '',
                  auth_url: str = DEFAULT_AUTH_URL):
         """
-        Args:
-            login: a login name for an existing TransIP account
-            RSAprivate_key: a RSA (!) private key for this TransIP account (see _fix_token for check)
-            global_key: setting for key (see TransIP documentation)
-            read_only: setting for key (see TransIP documentation)
-            label: label for key (see TransIP documentation)
-            auth_url: TransIP URL to authenticate to
+        :param login: a login name for an existing TransIP account
+        :type login: str
+        :param RSAprivate_key: a RSA (!) private key for this TransIP account (see _fix_token for check)
+        :type RSAprivate_key: str
+        :param global_key: setting for key (see TransIP documentation)
+        :type global_key: bool
+        :param read_only: setting for key (see TransIP documentation)
+        :type read_only: bool
+        :param label: label(s) for key (see TransIP documentation), concatenate with comma's ("label1,label2")
+        :type label: str
+        :param auth_url: TransIP URL to authenticate to
+        :type auth_url: str
+
+        |
         """
         self._login = login
         self._private_key = self._fix_key(RSAprivate_key)
@@ -65,15 +83,17 @@ class TransipToken(object):
         self._request_body = None
 
     def set_label(self, label: str):
-        """Set a label. This will invalidate the existing token, so a new one will have to be generated
-        Args:
-            label: a string with the label
+        """Set label(s). This will invalidate the existing token, so a new one will have to be generated
+
+        :param label: a string with the label(s) (separated by comma's: "label1,label2")
+        :type label: str
         """
         if self._label != label:
             self._label = label
             self._token = None
 
     def get_token(self):
+        """Return the current token; create one when there is none"""
         if not self._valid_token():
             self._create_token()
         return self._token
