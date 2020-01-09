@@ -21,6 +21,7 @@ class TransipRestClient(GenericRestClient):
     - a get request returns a (possible nested) dict or list (can be empty)
     - a post/put/patch request will not return anything
     - exceptions will be raised if needed. Exceptions are based on TransipRestException
+    - 'related resources' are discarded
 
     TransIP documentation can be found at https://api.transip.nl/rest/docs.html
     """

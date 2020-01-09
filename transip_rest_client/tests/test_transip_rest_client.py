@@ -24,7 +24,6 @@ class TestTransipRestClient(TestCase):
         answer = self.transip_client.ping()
         self.assertEqual(answer, 'pong')
 
-
     def test__transip_headers(self):
         headers = self.transip_client._transip_headers()
         self.assertIsInstance(headers, dict,
@@ -119,5 +118,4 @@ class TestTransipRestClient(TestCase):
         wrongkey = RSAkey[:50] + random_string() + RSAkey[60:]
         with self.assertRaises(TransipTokenAuthorisationException):
             non_authorizing_transip_client = TransipRestClient(user=transipaccount, RSAprivate_key=wrongkey)
-        print("foo")
 
