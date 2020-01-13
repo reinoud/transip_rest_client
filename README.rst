@@ -33,16 +33,12 @@ Usage
 -----
 With the file rsaprivatekey.txt in current directory::
 
-    import transip_rest_client
-    account = 'myaccount'
+    from transip_rest_client import TransipRestClient
+
     with open('rsaprivatekey.txt', 'r') as f:
-        key = f.read()
-    client = transip_rest_client.TransipRestClient(user=account, RSAprivate_key=key)
-    print(client.ping())
-
-output::
-
-    pong
+        my_RSA_key = f.read()
+    client = TransipRestClient(user='myaccountname', RSAprivate_key=my_RSA_key)
+    client.post_dns_entry(domain='example.com', name='www', type='A', content='1.2.3.4')
 
 
 getting tests working
