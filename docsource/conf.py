@@ -26,6 +26,7 @@ project = transip_rest_client.__title__
 copyright = transip_rest_client.__copyright__
 author = transip_rest_client.__author__
 version = release = transip_rest_client.__version__
+license = transip_rest_client.__license__
 
 # -- General configuration ---------------------------------------------------
 
