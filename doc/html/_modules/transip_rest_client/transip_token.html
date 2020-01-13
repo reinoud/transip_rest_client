@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>transip_rest_client.transip_token &#8212; TransIP REST API client 0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for transip_rest_client.transip_token</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Startmail.com, 2020</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated</span>
+<span class="c1"># documentation files (the “Software”), to deal in the Software without restriction, including without limitation the</span>
+<span class="c1"># rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to</span>
+<span class="c1"># permit persons to whom the Software is furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in all copies or substantial portions of the</span>
+<span class="c1"># Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO</span>
+<span class="c1"># THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,</span>
+<span class="c1"># TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">cryptography.hazmat.backends</span> <span class="kn">import</span> <span class="n">default_backend</span>
+<span class="kn">from</span> <span class="nn">cryptography.hazmat.primitives</span> <span class="kn">import</span> <span class="n">serialization</span><span class="p">,</span> <span class="n">hashes</span>
+<span class="kn">from</span> <span class="nn">cryptography.hazmat.primitives.asymmetric</span> <span class="kn">import</span> <span class="n">padding</span>
+
+<span class="n">DEFAULT_AUTH_URL</span> <span class="o">=</span> <span class="s1">&#39;https://api.transip.nl/v6/auth&#39;</span>
+<span class="n">DEFAULT_EXPIRATION_TIME</span> <span class="o">=</span> <span class="s1">&#39;30 minutes&#39;</span>
+
+
+<div class="viewcode-block" id="TransipTokenAuthorisationException"><a class="viewcode-back" href="../../transip_token.html#transip_rest_client.transip_token.TransipTokenAuthorisationException">[docs]</a><span class="k">class</span> <span class="nc">TransipTokenAuthorisationException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when authorisation at TransIP fails. Usually this means that there is something wrong with the used</span>
+<span class="sd">    private key (is it converted to RSA?). Whitelisting problems raise another exception.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="TransipTokenPrivateKeyFormatException"><a class="viewcode-back" href="../../transip_token.html#transip_rest_client.transip_token.TransipTokenPrivateKeyFormatException">[docs]</a><span class="k">class</span> <span class="nc">TransipTokenPrivateKeyFormatException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when the supplied private key does not look correct</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="TransipTokenGeneralException"><a class="viewcode-back" href="../../transip_token.html#transip_rest_client.transip_token.TransipTokenGeneralException">[docs]</a><span class="k">class</span> <span class="nc">TransipTokenGeneralException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when something is wrong during the request of a token. There should be more information in the content</span>
+<span class="sd">    of the exception</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="TransipToken"><a class="viewcode-back" href="../../transip_token.html#transip_rest_client.transip_token.TransipToken">[docs]</a><span class="k">class</span> <span class="nc">TransipToken</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class to manage the needed token for the TransIP REST API.</span>
+<span class="sd">    as documented on https://api.transip.nl/rest/docs.html#header-authentication</span>
+
+<span class="sd">    The steps taken are:</span>
+
+<span class="sd">    - create a request body (including a random &#39;nonce&#39; field and label(s))</span>
+<span class="sd">    - create a signature by encrypting this request body with the private key</span>
+<span class="sd">    - send a request to the auth endpoint with the request body and signature</span>
+<span class="sd">      (this proves that we have the private key since TransIP can decrypt it with the public key)</span>
+<span class="sd">    - a token is sent back to us by TransIP that can be used until it expires</span>
+
+<span class="sd">    |</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">login</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">RSAprivate_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">global_key</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">read_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">auth_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_AUTH_URL</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param login: a login name for an existing TransIP account</span>
+<span class="sd">        :type login: str</span>
+<span class="sd">        :param RSAprivate_key: a RSA (!) private key for this TransIP account (see _fix_token for check)</span>
+<span class="sd">        :type RSAprivate_key: str</span>
+<span class="sd">        :param global_key: setting for key (see TransIP documentation)</span>
+<span class="sd">        :type global_key: bool</span>
+<span class="sd">        :param read_only: setting for key (see TransIP documentation)</span>
+<span class="sd">        :type read_only: bool</span>
+<span class="sd">        :param label: label(s) for key (see TransIP documentation), concatenate with comma&#39;s (&quot;label1,label2&quot;)</span>
+<span class="sd">        :type label: str</span>
+<span class="sd">        :param auth_url: TransIP URL to authenticate to</span>
+<span class="sd">        :type auth_url: str</span>
+
+<span class="sd">        |</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_login</span> <span class="o">=</span> <span class="n">login</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_private_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fix_key</span><span class="p">(</span><span class="n">RSAprivate_key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_global_key</span> <span class="o">=</span> <span class="n">global_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span> <span class="o">=</span> <span class="n">read_only</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_auth_url</span> <span class="o">=</span> <span class="n">auth_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_expiration_time</span> <span class="o">=</span> <span class="n">DEFAULT_EXPIRATION_TIME</span>  <span class="c1"># since the format is not documented, we only use the default</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_token_date</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request_body</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="TransipToken.set_label"><a class="viewcode-back" href="../../transip_token.html#transip_rest_client.transip_token.TransipToken.set_label">[docs]</a>    <span class="k">def</span> <span class="nf">set_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set label(s). This will invalidate the existing token, so a new one will have to be generated</span>
+
+<span class="sd">        :param label: a string with the label(s) (separated by comma&#39;s: &quot;label1,label2&quot;)</span>
+<span class="sd">        :type label: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">!=</span> <span class="n">label</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">label</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="TransipToken.get_token"><a class="viewcode-back" href="../../transip_token.html#transip_rest_client.transip_token.TransipToken.get_token">[docs]</a>    <span class="k">def</span> <span class="nf">get_token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the current token; create one when there is none&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_token</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_token</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_token</span><span class="p">()</span>
+
+<div class="viewcode-block" id="TransipToken.invalidate"><a class="viewcode-back" href="../../transip_token.html#transip_rest_client.transip_token.TransipToken.invalidate">[docs]</a>    <span class="k">def</span> <span class="nf">invalidate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;enable outside world to invalidate the token so a new one will be generated next time&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_token_date</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_request_body</span><span class="p">()</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;Signature&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">signature</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_auth_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">body</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransipTokenGeneralException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error during request of token: </span><span class="si">{e}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span><span class="p">:</span>
+            <span class="n">errorreason</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="n">TransipTokenAuthorisationException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error with authentication: </span><span class="si">{errorreason}</span><span class="s1">, please check private key&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;token&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_token_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransipTokenGeneralException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;TransIP API did not return expected token: </span><span class="si">{e}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_valid_token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;check existence and age of token</span>
+<span class="sd">        a token is valid until 25 minutes after creation. Since we do not know the format for specifying another</span>
+<span class="sd">        duration that 30 minutes, this is hard-coded</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+               <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+               <span class="ow">and</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token_date</span><span class="p">)</span><span class="o">.</span><span class="n">seconds</span> <span class="o">&lt;</span> <span class="mi">1500</span>
+
+    <span class="k">def</span> <span class="nf">_create_request_body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">request_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;login&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_login</span><span class="p">,</span>
+                        <span class="s1">&#39;nonce&#39;</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span>  <span class="c1"># a random string</span>
+                        <span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span><span class="p">,</span>
+                        <span class="s1">&#39;expiration_time&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expiration_time</span><span class="p">,</span>
+                        <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">,</span>
+                        <span class="s1">&#39;global_key&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global_key</span>
+                        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_body_dict</span> <span class="o">=</span> <span class="n">request_body</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_body_string</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">request_body</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_signature</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_body_string</span>
+
+    <span class="k">def</span> <span class="nf">_create_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Uses the private key to sign the request body. &quot;&quot;&quot;</span>
+        <span class="n">private_key</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="n">load_pem_private_key</span><span class="p">(</span>
+            <span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_private_key</span><span class="p">),</span>
+            <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">backend</span><span class="o">=</span><span class="n">default_backend</span><span class="p">())</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="n">private_key</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span>
+            <span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_body_string</span><span class="p">),</span>
+            <span class="n">padding</span><span class="o">.</span><span class="n">PKCS1v15</span><span class="p">(),</span>
+            <span class="n">hashes</span><span class="o">.</span><span class="n">SHA512</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signature</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">signature</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_fix_key</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fix the format of the RSA private key</span>
+<span class="sd">        make sure whitespace errors are fixed</span>
+<span class="sd">        a private key should look like:</span>
+
+<span class="sd">        -----BEGIN RSA PRIVATE KEY-----\n</span>
+<span class="sd">        &lt;lines of max64 characters&gt;\n</span>
+<span class="sd">        -----END RSA PRIVATE KEY-----</span>
+
+<span class="sd">        NOTE: this code needs a RSA private key! A TransIP key has to be converted using</span>
+<span class="sd">        openssl rsa -in private_key.pem</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">regexp</span> <span class="o">=</span> <span class="s1">&#39;-----BEGIN RSA PRIVATE KEY-----(.*)-----END RSA PRIVATE KEY-----&#39;</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">regexp</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransipTokenPrivateKeyFormatException</span>
+        <span class="n">keybody</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">keybody</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">keybody</span><span class="p">)</span>
+        <span class="n">keybodylines</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">keybody</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+        <span class="n">newkeybody</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">keybodylines</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;-----BEGIN RSA PRIVATE KEY-----</span><span class="se">\n</span><span class="si">{newkeybody}</span><span class="se">\n</span><span class="s1">-----END RSA PRIVATE KEY-----&#39;</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">TransIP REST API client</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../transip_rest_client.html">TransIP REST Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transip_token.html">TransIP Token</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generic_rest_client.html">Generic REST Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transip_rest_client_exceptions.html">TransIP REST Client Exceptions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">The MIT License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;Copyright 2020 Startmail.com.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
