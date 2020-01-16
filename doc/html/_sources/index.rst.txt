@@ -10,6 +10,9 @@ TransIP_ is a Dutch ISP offering various services like domain registration, DNS 
 offer a REST API_ to be able to programatically order and configure these services. This API client is a Python
 abstraction for this API. Obviously, this only works when you are a TransIP customer.
 
+The module was built by Startmail.com in 2020.
+
+
 .. _TransIP: https://www.transip.nl/
 .. _API: https://api.transip.nl/rest/docs.html
 

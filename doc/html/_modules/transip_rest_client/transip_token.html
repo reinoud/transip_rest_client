@@ -184,7 +184,7 @@
 
     <span class="k">def</span> <span class="nf">_create_request_body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">request_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;login&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_login</span><span class="p">,</span>
-                        <span class="s1">&#39;nonce&#39;</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span>  <span class="c1"># a random string</span>
+                        <span class="s1">&#39;nonce&#39;</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span>  <span class="c1"># a random string</span>
                         <span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_only</span><span class="p">,</span>
                         <span class="s1">&#39;expiration_time&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expiration_time</span><span class="p">,</span>
                         <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">,</span>
