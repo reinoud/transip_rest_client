@@ -84,6 +84,18 @@ abstraction for this API. Obviously, this only works when you are a TransIP cust
 <p>As of jan 2020, the client is not (yet) completely implemented; DNS functions are working. But implementing the rest
 should be fairly straightforward by looking at the different functions in <code class="docutils literal notranslate"><span class="pre">transip_rest_client.py</span></code></p>
 </div>
+<div class="section" id="why-do-all-the-tests-fail">
+<h2>Why do all the tests fail?<a class="headerlink" href="#why-do-all-the-tests-fail" title="Permalink to this headline">¶</a></h2>
+<p>TransIP does not offer a test API, nor a key with access to a test account. To make the tests working you will have to
+add a file <code class="docutils literal notranslate"><span class="pre">auth_setup.py</span></code> in the <code class="docutils literal notranslate"><span class="pre">tests</span></code> directory that defines values for your TransIP account, your key, and an
+existing domain in that account to edit like this example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">transipaccount</span> <span class="o">=</span> <span class="s1">&#39;myaccount&#39;</span>
+<span class="n">RSAkey</span> <span class="o">=</span> <span class="s1">&#39;-----BEGIN RSA PRIVATE KEY-----</span><span class="se">\n</span><span class="s1">&lt;myRSAKey&gt;</span><span class="se">\n</span><span class="s1">-----END RSA PRIVATE KEY-----&#39;</span>
+<span class="n">testdomain</span> <span class="o">=</span> <span class="s1">&#39;mydomain.com&#39;</span>
+</pre></div>
+</div>
+<p>the <code class="docutils literal notranslate"><span class="pre">auth_setup.py</span></code> is not part of the distribution for obvious reasons…</p>
+</div>
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
 <p>This software is released under the <a class="reference internal" href="license.html#mit-license"><span class="std std-ref">The MIT License</span></a>.</p>

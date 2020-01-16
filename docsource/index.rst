@@ -62,6 +62,18 @@ Status
 As of jan 2020, the client is not (yet) completely implemented; DNS functions are working. But implementing the rest
 should be fairly straightforward by looking at the different functions in ``transip_rest_client.py``
 
+Why do all the tests fail?
+==========================
+TransIP does not offer a test API, nor a key with access to a test account. To make the tests working you will have to
+add a file ``auth_setup.py`` in the ``tests`` directory that defines values for your TransIP account, your key, and an
+existing domain in that account to edit like this example::
+
+    transipaccount = 'myaccount'
+    RSAkey = '-----BEGIN RSA PRIVATE KEY-----\n<myRSAKey>\n-----END RSA PRIVATE KEY-----'
+    testdomain = 'mydomain.com'
+
+the ``auth_setup.py`` is not part of the distribution for obvious reasons...
+
 License
 =======
 This software is released under the :ref:`mit_license`.
