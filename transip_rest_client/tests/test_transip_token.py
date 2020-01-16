@@ -18,8 +18,8 @@
 from unittest import TestCase, skip
 
 try:
-    from auth_setup import transipaccount, testdomain, RSAkey
-except:
+    from transip_rest_client.tests.auth_setup import transipaccount, testdomain, RSAkey
+except ImportError:
     print("missing authentication file needed to run tests")
     print("please create a file called 'auth_setup.py' in the tests directory")
     print("defining 3 variables like this:")
@@ -29,8 +29,9 @@ except:
     print("the testaccount should have at least 1 domain, DNS entries will be changed in this domain during tests!")
     exit(1)
 
-from utils_for_test import random_string
+from transip_rest_client.tests.utils_for_test import random_string
 from transip_rest_client.transip_token import TransipToken, TransipTokenPrivateKeyFormatException
+
 
 class TestTransipToken(TestCase):
     def setUp(self) -> None:

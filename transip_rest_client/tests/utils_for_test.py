@@ -15,6 +15,7 @@
 # SOFTWARE.
 #
 
+
 def random_string(size: int = 10) -> str:
     import random
     import string

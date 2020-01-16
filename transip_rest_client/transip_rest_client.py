@@ -17,10 +17,10 @@
 
 import json
 
-from .generic_rest_client import GenericRestClient
-from .transip_token import TransipToken, TransipTokenPrivateKeyFormatException, TransipTokenGeneralException
-from .transip_rest_client_exceptions import TransipRestException, TransIPRestResponseException
-from .__version__ import __version__
+from transip_rest_client.generic_rest_client import GenericRestClient
+from transip_rest_client.transip_token import TransipToken, TransipTokenPrivateKeyFormatException, TransipTokenGeneralException
+from transip_rest_client.transip_rest_client_exceptions import TransipRestException, TransIPRestResponseException
+from transip_rest_client.__version__ import __version__
 
 ALLOWED_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP', 'TLSA', 'CAA']
 ALLOWED_VERBS = ['get', 'post', 'patch', 'put', 'delete']

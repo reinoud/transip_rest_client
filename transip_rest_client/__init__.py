@@ -15,8 +15,8 @@
 # SOFTWARE.
 #
 
-from .transip_rest_client import TransipRestClient, TransipRestprivatekeyException
-from .transip_rest_client_exceptions import TransipRestException, TransIPRestResponseException
-from .transip_token import TransipTokenGeneralException, TransipTokenPrivateKeyFormatException, \
+from transip_rest_client.transip_rest_client import TransipRestClient, TransipRestprivatekeyException
+from transip_rest_client.transip_rest_client_exceptions import TransipRestException, TransIPRestResponseException
+from transip_rest_client.transip_token import TransipTokenGeneralException, TransipTokenPrivateKeyFormatException, \
     TransipTokenAuthorisationException
-from .__version__ import __version__, __description__, __title__, __copyright__, __author__, __license__
+from transip_rest_client.__version__ import __version__, __description__, __title__, __copyright__, __author__, __license__
