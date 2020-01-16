@@ -151,7 +151,7 @@ class TransipToken(object):
 
     def _create_request_body(self):
         request_body = {'login': self._login,
-                        'nonce': uuid.uuid1().hex[:10],  # a random string
+                        'nonce': uuid.uuid4().hex[:10],  # a random string
                         'read_only': self._read_only,
                         'expiration_time': self._expiration_time,
                         'label': self._label,
