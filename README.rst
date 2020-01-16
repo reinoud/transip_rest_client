@@ -6,10 +6,20 @@ This module implements a Python 3 client for the REST API of TransIP.nl (A dutch
 Overview
 --------
 
-TransIP offers a REST API to query and modify services. TransIP hosts excellent `documentation`_ on which this code is built
+TransIP offers a REST API to query and modify services. TransIP hosts excellent `documentation`_ on which this code is
+built.
+
+The module was built by Startmail.com in 2020.
 
 
 .. _documentation: https://api.transip.nl/rest/docs.html
+
+Documentation
+-------------
+
+This project is documented at `transip-rest-client.readthedocs.io`_. This README is just a short introduction.
+
+.. _transip-rest-client.readthedocs.io: https://transip-rest-client.readthedocs.io/en/latest/
 
 Getting it working
 ------------------
