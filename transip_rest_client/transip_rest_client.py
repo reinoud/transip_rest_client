@@ -224,6 +224,8 @@ class TransipRestClient(GenericRestClient):
             return {}
         request, http_code = self._request(relative_endpoint=f'/domains/{domain}', verb='get', params=None,
                                            expected_http_codes=[200, 404])
+        if http_code == 404:
+            raise TransIPRestDomainNotFound(errormsg=f'domain {domain} not found', statuscode=http_code)
         return request.get('domain', {})
 
     def get_dns_entries(self, domain: str = None) -> list:
@@ -423,7 +425,7 @@ class TransipRestClient(GenericRestClient):
         request, http_code = self._request(relative_endpoint=f'/domains/{domain}/nameservers', verb='get', params=None,
                                            expected_http_codes=[200, 404, 406])
         if http_code == 404:
-            raise TransIPRestDomainNotFound(errormsg=f'domain {domain} not found at TransIP)', statuscode=http_code)
+            raise TransIPRestDomainNotFound(errormsg=f'domain {domain} not found', statuscode=http_code)
         return request.get('nameservers', [])
 
     def get_domain_actions(self, domain: str = None) -> dict:
@@ -448,4 +450,28 @@ class TransipRestClient(GenericRestClient):
             return {}
         request, http_code = self._request(relative_endpoint=f'/domains/{domain}/actions', verb='get', params=None,
                                            expected_http_codes=[200, 404, 406])
+        if http_code == 404:
+            raise TransIPRestDomainNotFound(errormsg=f'domain {domain} not found', statuscode=http_code)
         return request.get('action', [])
+
+    def get_domain_zone_file(self, domain: str = None) -> str:
+        """get the zonefile (BIND format) as a signle string
+
+        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-zone-file-get
+
+        :param domain: an existing domain hosted by TransIP
+        :type domain: str
+
+        :rtype: str
+        :returns:
+            A string with the zone file
+
+        :raises:
+        """
+        if domain is None:
+            return ''
+        request, http_code = self._request(relative_endpoint=f'/domains/{domain}/zone-file', verb='get', params=None,
+                                           expected_http_codes=[200, 404, 406])
+        if http_code == 404:
+            raise TransIPRestDomainNotFound(errormsg=f'domain {domain} not found', statuscode=http_code)
+        return request.get('zoneFile', '')

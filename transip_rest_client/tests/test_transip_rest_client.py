@@ -91,8 +91,6 @@ class TestTransipRestClient(TestCase):
                               msg="expected a dict when calling get_domain")
         self.assertEqual(testdomain, domain['name'],
                          msg=f"expected domain {testdomain} when calling get_domain({testdomain})")
-
-    def test_get_empty_domain(self):
         empty_domain = self.transip_client.get_domain('')
         self.assertIsInstance(empty_domain, dict,
                               msg="expected a dict when calling get_domain")
@@ -103,6 +101,8 @@ class TestTransipRestClient(TestCase):
                               msg="expected a dict when calling get_domain")
         self.assertEqual(len(empty_domain), 0,
                          msg=f"expected empty dict when calling get_domain with None as domain")
+        with self.assertRaises(TransIPRestDomainNotFound):
+            self.transip_client.get_domain(testdomain + '.invalidtld')
 
     def test_get_dns_entries(self):
         dns_entries = self.transip_client.get_dns_entries(testdomain)
@@ -219,14 +219,14 @@ class TestTransipRestClient(TestCase):
     # 20200122 TODO: fix this when it is working at TransIP side
     @expectedFailure
     def test_get_dnssec(self):
-        dnssec_entries = self.transip_client.get_dnssec(testdomain)
-        self.assertGreater(len(dnssec_entries), 0)
-
-    def test_get_dnssec_empty_domain(self):
         dnssec_entries = self.transip_client.get_dnssec('')
         self.assertEqual(len(dnssec_entries), 0)
         dnssec_entries = self.transip_client.get_dnssec(None)
         self.assertEqual(len(dnssec_entries), 0)
+        with self.assertRaises(TransIPRestDomainNotFound):
+            self.transip_client.get_dnssec(testdomain + '.invalidtld')
+        dnssec_entries = self.transip_client.get_dnssec(testdomain)
+        self.assertGreater(len(dnssec_entries), 0)
 
     def test_invalidkey(self):
         wrongkey = RSAkey[:50] + random_string() + RSAkey[60:]
@@ -244,21 +244,32 @@ class TestTransipRestClient(TestCase):
                                msg="Expected to raise TransIPRestDomainNotFound when requesting nameservers " +
                                    "for example.com"):
             self.transip_client.get_nameservers('example.com')
-
-    def test_get_nameservers_empty(self):
         nameservers = self.transip_client.get_nameservers('')
         self.assertEqual(len(nameservers), 0)
         nameservers = self.transip_client.get_nameservers(None)
         self.assertEqual(len(nameservers), 0)
+        with self.assertRaises(TransIPRestDomainNotFound):
+            self.transip_client.get_nameservers(testdomain + '.invalidtld')
 
     def test_get_domain_actions(self):
         actions = self.transip_client.get_domain_actions(testdomain)
         self.assertIsInstance(actions, dict)
         for key in ['name', 'message', 'hasFailed']:
             self.assertTrue((key in actions), msg=f'Expected key {key} in actions')
-
-    def test_get_domain_actions_empty(self):
         actions = self.transip_client.get_domain_actions('')
         self.assertEqual(len(actions), 0)
         actions = self.transip_client.get_domain_actions(None)
         self.assertEqual(len(actions), 0)
+        with self.assertRaises(TransIPRestDomainNotFound):
+            self.transip_client.get_domain_actions(testdomain + '.invalidtld')
+
+    def test_get_zone_file(self):
+        zonefile = self.transip_client.get_domain_zone_file(testdomain)
+        self.assertIsInstance(zonefile, str)
+        self.assertGreater(len(zonefile), 0)
+        zonefile = self.transip_client.get_domain_zone_file('')
+        self.assertEqual(len(zonefile), 0)
+        zonefile = self.transip_client.get_domain_zone_file(None)
+        self.assertEqual(len(zonefile), 0)
+        with self.assertRaises(TransIPRestDomainNotFound):
+            self.transip_client.get_domain_zone_file(testdomain + '.invalidtld')
