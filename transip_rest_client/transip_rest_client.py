@@ -103,12 +103,9 @@ class TransipRestClient(GenericRestClient):
         if verb not in super_func.keys():
             raise TransipRestException('verb "{verb}" not allowed in _do_request')
         expected_http_codes = list(set(expected_http_codes + [401]))
-        request_headers_status = super_func[verb](endpoint=endpoint, params=params,
-                                                  expected_http_codes=expected_http_codes,
-                                                  extra_headers=self._transip_headers())
-        jsonstr = request_headers_status[0]
-        headers = request_headers_status[1]
-        statuscode = request_headers_status[2]
+        jsonstr, headers, statuscode = super_func[verb](endpoint=endpoint, params=params,
+                                                        expected_http_codes=expected_http_codes,
+                                                        extra_headers=self._transip_headers())
         self._update_bookkeeping(headers)
 
         if statuscode not in expected_http_codes:
