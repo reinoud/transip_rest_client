@@ -31,6 +31,7 @@ except ImportError:
 from transip_rest_client.tests.utils_for_test import random_string
 from transip_rest_client import TransipRestClient, TransipTokenAuthorisationException, \
     TransIPRestDomainNotFound, TransIPRestRecordNotFound, TransipTokenGeneralException, TransipRestException
+from transip_rest_client.generic_rest_client import UnknownResultException
 
 
 class TestTransipRestClient(TestCase):
@@ -114,17 +115,20 @@ class TestTransipRestClient(TestCase):
             self.assertIn(dns_entries[0]['type'], ALLOWED_TYPES,
                           msg=f"expected {dns_entries[0]['type']} to be of allowed type ({allowed_types_string})")
 
-    def test_get_dns_entries_empty_domain(self):
         dns_entries = self.transip_client.get_dns_entries('')
         self.assertIsInstance(dns_entries, list,
                               msg="exepected a list when calling get_dns_entries")
         self.assertEqual(len(dns_entries), 0,
                          msg=f"expected empty dict when calling get_dns_entries with empty string")
+
         dns_entries = self.transip_client.get_dns_entries(None)
         self.assertIsInstance(dns_entries, list,
                               msg="exepected a list when calling get_dns_entries")
         self.assertEqual(len(dns_entries), 0,
                          msg=f"expected empty dict when calling get_dns_entries with None as domain")
+
+        with self.assertRaises(TransIPRestDomainNotFound):
+            self.transip_client.get_dns_entries(testdomain + '.invalidtld')
 
     def test_post_patch_delete_dns_entry(self):
         dns_entries = self.transip_client.get_dns_entries(testdomain)
@@ -223,7 +227,10 @@ class TestTransipRestClient(TestCase):
         self.assertEqual(len(dnssec_entries), 0)
         dnssec_entries = self.transip_client.get_dnssec(None)
         self.assertEqual(len(dnssec_entries), 0)
-        with self.assertRaises(TransIPRestDomainNotFound):
+
+        # I would expect a 404 here, but TransIP returns a 500...
+        # ticket has been sent to TransIP Support
+        with self.assertRaises(UnknownResultException):
             self.transip_client.get_dnssec(testdomain + '.invalidtld')
         dnssec_entries = self.transip_client.get_dnssec(testdomain)
         self.assertGreater(len(dnssec_entries), 0)
@@ -244,10 +251,13 @@ class TestTransipRestClient(TestCase):
                                msg="Expected to raise TransIPRestDomainNotFound when requesting nameservers " +
                                    "for example.com"):
             self.transip_client.get_nameservers('example.com')
+
         nameservers = self.transip_client.get_nameservers('')
         self.assertEqual(len(nameservers), 0)
+
         nameservers = self.transip_client.get_nameservers(None)
         self.assertEqual(len(nameservers), 0)
+
         with self.assertRaises(TransIPRestDomainNotFound):
             self.transip_client.get_nameservers(testdomain + '.invalidtld')
 
@@ -256,10 +266,13 @@ class TestTransipRestClient(TestCase):
         self.assertIsInstance(actions, dict)
         for key in ['name', 'message', 'hasFailed']:
             self.assertTrue((key in actions), msg=f'Expected key {key} in actions')
+
         actions = self.transip_client.get_domain_actions('')
         self.assertEqual(len(actions), 0)
+
         actions = self.transip_client.get_domain_actions(None)
         self.assertEqual(len(actions), 0)
+
         with self.assertRaises(TransIPRestDomainNotFound):
             self.transip_client.get_domain_actions(testdomain + '.invalidtld')
 
@@ -267,9 +280,12 @@ class TestTransipRestClient(TestCase):
         zonefile = self.transip_client.get_domain_zone_file(testdomain)
         self.assertIsInstance(zonefile, str)
         self.assertGreater(len(zonefile), 0)
+
         zonefile = self.transip_client.get_domain_zone_file('')
         self.assertEqual(len(zonefile), 0)
+
         zonefile = self.transip_client.get_domain_zone_file(None)
         self.assertEqual(len(zonefile), 0)
+
         with self.assertRaises(TransIPRestDomainNotFound):
             self.transip_client.get_domain_zone_file(testdomain + '.invalidtld')

@@ -167,6 +167,9 @@ simple strings. Exceptions are raised when something is wrong.</p>
 </div>
 </p>
 </dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="transip_rest_client_exceptions.html#transip_rest_client.transip_rest_client_exceptions.TransIPRestDomainNotFound" title="transip_rest_client.transip_rest_client_exceptions.TransIPRestDomainNotFound"><strong>TransIPRestDomainNotFound</strong></a> – when the domain is not found</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -192,6 +195,26 @@ simple strings. Exceptions are raised when something is wrong.</p>
 </div>
 </p>
 </dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="transip_rest_client.transip_rest_client.TransipRestClient.get_domain_zone_file">
+<code class="sig-name descname">get_domain_zone_file</code><span class="sig-paren">(</span><em class="sig-param">domain: str = None</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/transip_rest_client/transip_rest_client.html#TransipRestClient.get_domain_zone_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#transip_rest_client.transip_rest_client.TransipRestClient.get_domain_zone_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the zonefile (BIND format) as a signle string</p>
+<p>TransIP documentation: <a class="reference external" href="https://api.transip.nl/rest/docs.html#domains-zone-file-get">https://api.transip.nl/rest/docs.html#domains-zone-file-get</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>domain</strong> (<em>str</em>) – an existing domain hosted by TransIP</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A string with the zone file</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p></p></dd>
 </dl>
 </dd></dl>
 
@@ -240,8 +263,8 @@ simple strings. Exceptions are raised when something is wrong.</p>
 <dd class="field-even"><p>list</p>
 </dd>
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><p>A list of dicts with information about the nameservers for this domain. Note: currently only the hostnames
-are returned for transip nameservers</p>
+<dd class="field-odd"><p><p>A list of dicts with information about the nameservers for this domain.</p>
+<p><strong>Note</strong>: currently only the hostnames are returned for transip nameservers</p>
 <p>example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[{</span><span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="s1">&#39;ns0.transip.net&#39;</span><span class="p">,</span>
   <span class="s1">&#39;ipv4&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
@@ -256,8 +279,8 @@ are returned for transip nameservers</p>
 </div>
 </p>
 </dd>
-<dt class="field-even">Raise</dt>
-<dd class="field-even"><p>TransIPRestDomainNotFound: when a domain is queried that is not hosted by TransIP</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="transip_rest_client_exceptions.html#transip_rest_client.transip_rest_client_exceptions.TransIPRestDomainNotFound" title="transip_rest_client.transip_rest_client_exceptions.TransIPRestDomainNotFound"><strong>TransIPRestDomainNotFound</strong></a> – when the domain is not found</p>
 </dd>
 </dl>
 </dd></dl>
@@ -310,11 +333,11 @@ are returned for transip nameservers</p>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
 </dd>
-<dt class="field-odd">Raises</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><a class="reference internal" href="transip_rest_client_exceptions.html#transip_rest_client.transip_rest_client_exceptions.TransipRestException" title="transip_rest_client.transip_rest_client_exceptions.TransipRestException"><strong>TransipRestException</strong></a> – not all required arguments are passed</p></li>
-<li><p><a class="reference internal" href="transip_rest_client_exceptions.html#transip_rest_client.transip_rest_client_exceptions.TransipRestException" title="transip_rest_client.transip_rest_client_exceptions.TransipRestException"><strong>TransipRestException</strong></a> – when an invalid type is passed</p></li>
-</ul>
+<dt class="field-odd">Raise</dt>
+<dd class="field-odd"><p>TransipRestException: not all required arguments are passed</p>
+</dd>
+<dt class="field-even">Raise</dt>
+<dd class="field-even"><p>TransipRestException: when an invalid type is passed</p>
 </dd>
 </dl>
 </dd></dl>

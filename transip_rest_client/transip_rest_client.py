@@ -21,7 +21,7 @@ from transip_rest_client.generic_rest_client import GenericRestClient
 from transip_rest_client.transip_token import TransipToken, TransipTokenPrivateKeyFormatException, \
     TransipTokenGeneralException
 from transip_rest_client.transip_rest_client_exceptions import TransipRestException, TransIPRestResponseException, \
-    TransIPRestDomainNotFound, TransIPRestRecordNotFound
+    TransIPRestDomainNotFound, TransIPRestRecordNotFound, TransIPRestUnexpectedStatus
 from transip_rest_client.__version__ import __version__
 
 ALLOWED_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP', 'TLSA', 'CAA']
@@ -93,6 +93,8 @@ class TransipRestClient(GenericRestClient):
         self.rate_limit_reset = int(headers.get('X-Rate-Limit-Reset', '0'))
 
     def _request(self, relative_endpoint, verb, params, expected_http_codes=None) -> tuple:
+        """perform the actual request by calling the correct function in the generic rest client superclass
+        """
         endpoint = f'{self.base_url}{relative_endpoint}'
         super_func = {'get': super().get_request,
                       'post': super().post_request,
@@ -118,6 +120,8 @@ class TransipRestClient(GenericRestClient):
                 errorcontext = f"http-action: '{verb}' endpoint: '{relative_endpoint}'"
                 errormsg = f'{returnederror} ; {errorcontext}'
                 raise TransIPRestResponseException(statuscode=statuscode, errormsg=errormsg)
+            else:
+                raise TransIPRestUnexpectedStatus(statuscode=statuscode, errormsg='Unexpected http status')
         if jsonstr:
             return json.loads(jsonstr), statuscode
         else:
@@ -219,6 +223,8 @@ class TransipRestClient(GenericRestClient):
                   'supportsLocking': True,
                   'tags': ['mytag']
                 }
+
+        :raises TransIPRestDomainNotFound: when the domain is not found
         """
         if domain is None:
             return {}
@@ -251,11 +257,15 @@ class TransipRestClient(GenericRestClient):
                     'name': '@',
                     'type': 'AAAA'}
                 ]
+
+        :raises TransIPRestDomainNotFound: when the domain is not found
         """
         if domain is None:
             return []
         request, http_code = self._request(relative_endpoint=f'/domains/{domain}/dns', verb='get', params=None,
                                            expected_http_codes=[200, 404, 406])
+        if http_code == 404:
+            raise TransIPRestDomainNotFound(errormsg=f'domain {domain} not found', statuscode=http_code)
         return request.get('dnsEntries', [])
 
     def post_dns_entry(self,
@@ -321,8 +331,8 @@ class TransipRestClient(GenericRestClient):
 
         :rtype: None
 
-        :raise TransipRestException: not all required arguments are passed
-        :raise TransipRestException: when an invalid type is passed
+        :raise: TransipRestException: not all required arguments are passed
+        :raise: TransipRestException: when an invalid type is passed
         """
         if domain is None or expire is None or name is None or record_type is None or content is None:
             raise TransipRestException('patch_dns_entry called without all required parameters')
@@ -391,6 +401,8 @@ class TransipRestClient(GenericRestClient):
             return {}
         request, http_code = self._request(relative_endpoint=f'/domains/{domain}/dnssec', verb='get', params=None,
                                            expected_http_codes=[200, 404, 406])
+        if http_code == 404:
+            raise TransIPRestDomainNotFound(errormsg=f'domain {domain} not found', statuscode=http_code)
         return request.get('dnsSecEntries', {})
 
     def get_nameservers(self, domain: str = None) -> list:
@@ -403,8 +415,9 @@ class TransipRestClient(GenericRestClient):
 
         :rtype: list
         :returns:
-            A list of dicts with information about the nameservers for this domain. Note: currently only the hostnames
-            are returned for transip nameservers
+            A list of dicts with information about the nameservers for this domain.
+
+            **Note**: currently only the hostnames are returned for transip nameservers
 
             example::
 
@@ -418,7 +431,7 @@ class TransipRestClient(GenericRestClient):
                   'ipv4': '',
                   'ipv6': ''}]
 
-        :raise: TransIPRestDomainNotFound: when a domain is queried that is not hosted by TransIP
+        :raises TransIPRestDomainNotFound: when the domain is not found
         """
         if domain is None:
             return []
