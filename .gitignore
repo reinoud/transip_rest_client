@@ -2,5 +2,6 @@
 _build/
 venv/
 transip_rest_client/tests/auth_setup.py
+doc/html
 *.pyc
 *~
