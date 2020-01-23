@@ -44,3 +44,9 @@ class TransIPRestResponseException(TransipRestException):
 
     def __str__(self):
         return f'API error code {self.status} ({self.name}): {self.description} ; {self.errormsg}'
+
+class TransIPRestDomainNotFound(TransIPRestResponseException):
+    pass
+
+class TransIPRestRecordNotFound(TransIPRestResponseException):
+    pass

@@ -197,10 +197,13 @@
 
     <span class="k">def</span> <span class="nf">_create_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Uses the private key to sign the request body. &quot;&quot;&quot;</span>
-        <span class="n">private_key</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="n">load_pem_private_key</span><span class="p">(</span>
-            <span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_private_key</span><span class="p">),</span>
-            <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">backend</span><span class="o">=</span><span class="n">default_backend</span><span class="p">())</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">private_key</span> <span class="o">=</span> <span class="n">serialization</span><span class="o">.</span><span class="n">load_pem_private_key</span><span class="p">(</span>
+                <span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_private_key</span><span class="p">),</span>
+                <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">=</span><span class="n">default_backend</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransipTokenGeneralException</span><span class="p">(</span><span class="s1">&#39;cannot load Private Key&#39;</span><span class="p">)</span>
         <span class="n">signature</span> <span class="o">=</span> <span class="n">private_key</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span>
             <span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request_body_string</span><span class="p">),</span>
             <span class="n">padding</span><span class="o">.</span><span class="n">PKCS1v15</span><span class="p">(),</span>

@@ -51,8 +51,10 @@
 <span class="kn">import</span> <span class="nn">json</span>
 
 <span class="kn">from</span> <span class="nn">transip_rest_client.generic_rest_client</span> <span class="kn">import</span> <span class="n">GenericRestClient</span>
-<span class="kn">from</span> <span class="nn">transip_rest_client.transip_token</span> <span class="kn">import</span> <span class="n">TransipToken</span><span class="p">,</span> <span class="n">TransipTokenPrivateKeyFormatException</span><span class="p">,</span> <span class="n">TransipTokenGeneralException</span>
-<span class="kn">from</span> <span class="nn">transip_rest_client.transip_rest_client_exceptions</span> <span class="kn">import</span> <span class="n">TransipRestException</span><span class="p">,</span> <span class="n">TransIPRestResponseException</span>
+<span class="kn">from</span> <span class="nn">transip_rest_client.transip_token</span> <span class="kn">import</span> <span class="n">TransipToken</span><span class="p">,</span> <span class="n">TransipTokenPrivateKeyFormatException</span><span class="p">,</span> \
+    <span class="n">TransipTokenGeneralException</span>
+<span class="kn">from</span> <span class="nn">transip_rest_client.transip_rest_client_exceptions</span> <span class="kn">import</span> <span class="n">TransipRestException</span><span class="p">,</span> <span class="n">TransIPRestResponseException</span><span class="p">,</span> \
+    <span class="n">TransIPRestDomainNotFound</span><span class="p">,</span> <span class="n">TransIPRestRecordNotFound</span>
 <span class="kn">from</span> <span class="nn">transip_rest_client.__version__</span> <span class="kn">import</span> <span class="n">__version__</span>
 
 <span class="n">ALLOWED_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;AAAA&#39;</span><span class="p">,</span> <span class="s1">&#39;CNAME&#39;</span><span class="p">,</span> <span class="s1">&#39;MX&#39;</span><span class="p">,</span> <span class="s1">&#39;NS&#39;</span><span class="p">,</span> <span class="s1">&#39;TXT&#39;</span><span class="p">,</span> <span class="s1">&#39;SRV&#39;</span><span class="p">,</span> <span class="s1">&#39;SSHFP&#39;</span><span class="p">,</span> <span class="s1">&#39;TLSA&#39;</span><span class="p">,</span> <span class="s1">&#39;CAA&#39;</span><span class="p">]</span>
@@ -81,18 +83,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">user</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">RSAprivate_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">rsaprivate_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_API_URL</span><span class="p">,</span>
                  <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param user: accountname for TransIP</span>
 <span class="sd">        :type user: str</span>
-<span class="sd">        :param RSAprivate_key: The (converted to) RSA Private key for this account</span>
-<span class="sd">        :type name: str</span>
+<span class="sd">        :param rsaprivate_key: The (converted to) RSA Private key for this account</span>
+<span class="sd">        :type rsaprivate_key: str</span>
 <span class="sd">        :param base_url: URL to authenticate to. default https://api.transip.nl/v6</span>
 <span class="sd">        :type base_url: str</span>
 <span class="sd">        :param timeout: timeout for connection in seconds</span>
-<span class="sd">        :type type: int</span>
+<span class="sd">        :type timeout: int</span>
 
 <span class="sd">        :raise TransipRestprivatekeyException: when authentication does not succeed.</span>
 
@@ -100,7 +102,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">TransipToken</span><span class="p">(</span><span class="n">login</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">RSAprivate_key</span><span class="o">=</span><span class="n">RSAprivate_key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">TransipToken</span><span class="p">(</span><span class="n">login</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">RSAprivate_key</span><span class="o">=</span><span class="n">rsaprivate_key</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">TransipTokenPrivateKeyFormatException</span><span class="p">,</span> <span class="n">TransipTokenGeneralException</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TransipRestprivatekeyException</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span>
@@ -111,19 +113,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rate_limit_remaining</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rate_limit_reset</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_transip_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_transip_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
                    <span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Bearer </span><span class="si">{self.token}</span><span class="s1">&#39;</span><span class="p">,</span>
                    <span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;TransIPPythonRestClient/</span><span class="si">{__version__}</span><span class="s2">&quot;</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">headers</span>
 
-    <span class="k">def</span> <span class="nf">_update_bookkeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">headers</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_update_bookkeeping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; expose the API limits to whom it may concern &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rate_limit_limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;X-Rate-Limit-Limit&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rate_limit_remaining</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;X-Rate-Limit-Remaining&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rate_limit_reset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;X-Rate-Limit-Reset&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relative_endpoint</span><span class="p">,</span> <span class="n">verb</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">expected_http_codes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relative_endpoint</span><span class="p">,</span> <span class="n">verb</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">expected_http_codes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
         <span class="n">endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.base_url}{relative_endpoint}</span><span class="s1">&#39;</span>
         <span class="n">super_func</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;get&#39;</span><span class="p">:</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_request</span><span class="p">,</span>
                       <span class="s1">&#39;post&#39;</span><span class="p">:</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">post_request</span><span class="p">,</span>
@@ -133,24 +135,26 @@
             <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="s1">&#39;verb &quot;</span><span class="si">{verb}</span><span class="s1">&quot; not allowed in _do_request&#39;</span><span class="p">)</span>
         <span class="n">expected_http_codes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">expected_http_codes</span> <span class="o">+</span> <span class="p">[</span><span class="mi">401</span><span class="p">]))</span>
         <span class="n">request_headers_status</span> <span class="o">=</span> <span class="n">super_func</span><span class="p">[</span><span class="n">verb</span><span class="p">](</span><span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
-                                                 <span class="n">expected_http_codes</span><span class="o">=</span><span class="n">expected_http_codes</span><span class="p">,</span>
-                                                 <span class="n">extra_headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transip_headers</span><span class="p">())</span>
+                                                  <span class="n">expected_http_codes</span><span class="o">=</span><span class="n">expected_http_codes</span><span class="p">,</span>
+                                                  <span class="n">extra_headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transip_headers</span><span class="p">())</span>
         <span class="n">jsonstr</span> <span class="o">=</span> <span class="n">request_headers_status</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">headers</span> <span class="o">=</span> <span class="n">request_headers_status</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">statuscode</span> <span class="o">=</span> <span class="n">request_headers_status</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_bookkeeping</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">statuscode</span> <span class="o">==</span> <span class="mi">401</span><span class="p">:</span>
-            <span class="n">errormsg</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">jsonstr</span><span class="p">)[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
-            <span class="k">raise</span> <span class="n">TransIPRestResponseException</span><span class="p">(</span><span class="n">statuscode</span><span class="o">=</span><span class="n">statuscode</span><span class="p">,</span> <span class="n">errormsg</span><span class="o">=</span><span class="n">errormsg</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">statuscode</span> <span class="o">&gt;=</span> <span class="mi">400</span><span class="p">:</span>
-            <span class="n">returnederror</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">jsonstr</span><span class="p">)[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
-            <span class="n">errorcontext</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http-action: &#39;</span><span class="si">{verb}</span><span class="s2">&#39; endpoint: &#39;</span><span class="si">{relative_endpoint}</span><span class="s2">&#39;&quot;</span>
-            <span class="n">errormsg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{returnederror}</span><span class="s1"> ; </span><span class="si">{errorcontext}</span><span class="s1">&#39;</span>
-            <span class="k">raise</span> <span class="n">TransIPRestResponseException</span><span class="p">(</span><span class="n">statuscode</span><span class="o">=</span><span class="n">statuscode</span><span class="p">,</span> <span class="n">errormsg</span><span class="o">=</span><span class="n">errormsg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">statuscode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">expected_http_codes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">statuscode</span> <span class="o">==</span> <span class="mi">401</span><span class="p">:</span>
+                <span class="n">errormsg</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">jsonstr</span><span class="p">)[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
+                <span class="k">raise</span> <span class="n">TransIPRestResponseException</span><span class="p">(</span><span class="n">statuscode</span><span class="o">=</span><span class="n">statuscode</span><span class="p">,</span> <span class="n">errormsg</span><span class="o">=</span><span class="n">errormsg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">statuscode</span> <span class="o">&gt;=</span> <span class="mi">400</span><span class="p">:</span>
+                <span class="n">returnederror</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">jsonstr</span><span class="p">)[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
+                <span class="n">errorcontext</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http-action: &#39;</span><span class="si">{verb}</span><span class="s2">&#39; endpoint: &#39;</span><span class="si">{relative_endpoint}</span><span class="s2">&#39;&quot;</span>
+                <span class="n">errormsg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{returnederror}</span><span class="s1"> ; </span><span class="si">{errorcontext}</span><span class="s1">&#39;</span>
+                <span class="k">raise</span> <span class="n">TransIPRestResponseException</span><span class="p">(</span><span class="n">statuscode</span><span class="o">=</span><span class="n">statuscode</span><span class="p">,</span> <span class="n">errormsg</span><span class="o">=</span><span class="n">errormsg</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">jsonstr</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">jsonstr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">jsonstr</span><span class="p">),</span> <span class="n">statuscode</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
+            <span class="k">return</span> <span class="p">{},</span> <span class="n">statuscode</span>
 
 <div class="viewcode-block" id="TransipRestClient.get_products"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.get_products">[docs]</a>    <span class="k">def</span> <span class="nf">get_products</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; Returns all available products currently offered by TransIP.</span>
@@ -177,8 +181,8 @@
 
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="s1">&#39;/products&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">])</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="s1">&#39;/products&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">])</span>
         <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;products&#39;</span><span class="p">,</span> <span class="p">{})</span></div>
 
 <div class="viewcode-block" id="TransipRestClient.ping"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.ping">[docs]</a>    <span class="k">def</span> <span class="nf">ping</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -188,8 +192,8 @@
 <span class="sd">        :return:</span>
 <span class="sd">            a string containing &#39;pong&#39; when connection and authentication is working</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="s1">&#39;/api-test&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">])</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="s1">&#39;/api-test&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">])</span>
         <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ping&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="TransipRestClient.get_domains"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.get_domains">[docs]</a>    <span class="k">def</span> <span class="nf">get_domains</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
@@ -217,8 +221,8 @@
 <span class="sd">                    &#39;tags&#39;: [&#39;mytag&#39;]}</span>
 <span class="sd">                ]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="s1">&#39;/domains&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">])</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="s1">&#39;/domains&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="p">])</span>
         <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;domains&#39;</span><span class="p">,</span> <span class="p">[])</span></div>
 
 <div class="viewcode-block" id="TransipRestClient.get_domain"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.get_domain">[docs]</a>    <span class="k">def</span> <span class="nf">get_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
@@ -251,12 +255,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{}</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">404</span><span class="p">])</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">404</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="p">{})</span></div>
 
-
-<div class="viewcode-block" id="TransipRestClient.get_dns_entries"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.get_dns_entries">[docs]</a>    <span class="k">def</span> <span class="nf">get_dns_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="TransipRestClient.get_dns_entries"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.get_dns_entries">[docs]</a>    <span class="k">def</span> <span class="nf">get_dns_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; Returns DNS records for a domain</span>
 
 <span class="sd">        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-dns-get</span>
@@ -281,16 +284,16 @@
 <span class="sd">                ]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{}</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dns&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dnsEntries&#39;</span><span class="p">,</span> <span class="p">{})</span></div>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dns&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dnsEntries&#39;</span><span class="p">,</span> <span class="p">[])</span></div>
 
 <div class="viewcode-block" id="TransipRestClient.post_dns_entry"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.post_dns_entry">[docs]</a>    <span class="k">def</span> <span class="nf">post_dns_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                        <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">expire</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_EXPIRE</span><span class="p">,</span>
-                       <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">record_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; Add a DNS record to an existing DNS zone</span>
 
@@ -302,8 +305,8 @@
 <span class="sd">        :type name: str</span>
 <span class="sd">        :param expire: expiry in seconds for caching this record (e.g. 86400)</span>
 <span class="sd">        :type expire: int</span>
-<span class="sd">        :param type: a valid DNS type (e.g. &#39;A&#39;, &#39;AAAA&#39;, &#39;TXT&#39;)</span>
-<span class="sd">        :type type: str</span>
+<span class="sd">        :param record_type: a valid DNS type (e.g. &#39;A&#39;, &#39;AAAA&#39;, &#39;TXT&#39;)</span>
+<span class="sd">        :type record_type: str</span>
 <span class="sd">        :param content: valid content for this type of DNS record (e.g. &#39;127.0.0.1&#39; for an &#39;A&#39;-type record)</span>
 <span class="sd">        :type content: str</span>
 
@@ -312,24 +315,24 @@
 <span class="sd">        :raise TransipRestException: not all required arguments are passed</span>
 <span class="sd">        :raise TransipRestException: when an invalid type is passed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">expire</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">content</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">expire</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">content</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="s1">&#39;post_dns_entry called without all required parameters&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALLOWED_TYPES</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;type </span><span class="si">{type}</span><span class="s1"> not allowed in call to post_dns_entry&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">record_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALLOWED_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;type </span><span class="si">{record_type}</span><span class="s1"> not allowed in call to post_dns_entry&#39;</span><span class="p">)</span>
         <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dnsEntry&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
                              <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="n">expire</span><span class="p">,</span>
-                             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">record_type</span><span class="p">,</span>
                              <span class="s1">&#39;content&#39;</span><span class="p">:</span> <span class="n">content</span><span class="p">}}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dns&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
-                      <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">201</span><span class="p">,</span> <span class="mi">403</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dns&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">201</span><span class="p">,</span> <span class="mi">403</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
         <span class="k">return</span></div>
 
 <div class="viewcode-block" id="TransipRestClient.patch_dns_entry"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.patch_dns_entry">[docs]</a>    <span class="k">def</span> <span class="nf">patch_dns_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                       <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">expire</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_EXPIRE</span><span class="p">,</span>
-                       <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">expire</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_EXPIRE</span><span class="p">,</span>
+                        <span class="n">record_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; Update the content of a single DNS entry, identified by the name, expire, type attributes.</span>
 
 <span class="sd">        When multiple or none of the current DNS entries matches, an exception will be thrown.</span>
@@ -342,8 +345,8 @@
 <span class="sd">        :type name: str</span>
 <span class="sd">        :param expire: expiry in seconds for caching this record (e.g. 86400)</span>
 <span class="sd">        :type expire: int</span>
-<span class="sd">        :param type: a valid DNS type (e.g. &#39;A&#39;, &#39;AAAA&#39;, &#39;TXT&#39;)</span>
-<span class="sd">        :type type: str</span>
+<span class="sd">        :param record_type: a valid DNS type (e.g. &#39;A&#39;, &#39;AAAA&#39;, &#39;TXT&#39;)</span>
+<span class="sd">        :type record_type: str</span>
 <span class="sd">        :param content: new content for this  DNS record (e.g. &#39;127.0.0.1&#39; for an &#39;A&#39;-type record)</span>
 <span class="sd">        :type content: str</span>
 
@@ -352,51 +355,133 @@
 <span class="sd">        :raise TransipRestException: not all required arguments are passed</span>
 <span class="sd">        :raise TransipRestException: when an invalid type is passed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">expire</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">content</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">expire</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">content</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="s1">&#39;patch_dns_entry called without all required parameters&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALLOWED_TYPES</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;type </span><span class="si">{type}</span><span class="s1"> not allowed in call to patch_dns_entry&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">record_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALLOWED_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;type </span><span class="si">{record_type}</span><span class="s1"> not allowed in call to patch_dns_entry&#39;</span><span class="p">)</span>
         <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dnsEntry&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
                              <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="n">expire</span><span class="p">,</span>
-                             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">record_type</span><span class="p">,</span>
                              <span class="s1">&#39;content&#39;</span><span class="p">:</span> <span class="n">content</span><span class="p">}}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dns&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;patch&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
-                      <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">204</span><span class="p">,</span> <span class="mi">403</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
+        <span class="n">respone</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dns&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;patch&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">204</span><span class="p">,</span> <span class="mi">403</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">http_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransIPRestRecordNotFound</span><span class="p">(</span><span class="n">errormsg</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Record not found&#39;</span><span class="p">,</span> <span class="n">statuscode</span><span class="o">=</span><span class="n">http_code</span><span class="p">)</span>
         <span class="k">return</span></div>
 
 <div class="viewcode-block" id="TransipRestClient.delete_dns_entry"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.delete_dns_entry">[docs]</a>    <span class="k">def</span> <span class="nf">delete_dns_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                       <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">expire</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_EXPIRE</span><span class="p">,</span>
-                       <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                         <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">expire</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_EXPIRE</span><span class="p">,</span>
+                         <span class="n">record_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot; Remove a single DNS entry in an existing DNS zone</span>
 
 <span class="sd">        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-dns-delete</span>
 
 <span class="sd">        :param domain: an existing DNS domain (e.g. &#39;example.com&#39;)</span>
-<span class="sd">        :type domain: int</span>
+<span class="sd">        :type domain: str</span>
 <span class="sd">        :param name: the name of the record (e.g. &#39;www&#39;)</span>
 <span class="sd">        :type name: str</span>
 <span class="sd">        :param expire: expiry in seconds for caching this record (e.g. 86400)</span>
 <span class="sd">        :type expire: int</span>
-<span class="sd">        :param type: a valid DNS type (e.g. &#39;A&#39;, &#39;AAAA&#39;, &#39;TXT&#39;)</span>
-<span class="sd">        :type type: str</span>
+<span class="sd">        :param record_type: a valid DNS type (e.g. &#39;A&#39;, &#39;AAAA&#39;, &#39;TXT&#39;)</span>
+<span class="sd">        :type record_type: str</span>
 <span class="sd">        :param content: current content for this  DNS record</span>
 <span class="sd">        :type content: str</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">expire</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">content</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">expire</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">record_type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">content</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="s1">&#39;delete_dns_entry called without all required parameters&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALLOWED_TYPES</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;type </span><span class="si">{type}</span><span class="s1"> not allowed in call to delete_dns_entry&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">record_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALLOWED_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransipRestException</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;type </span><span class="si">{record_type}</span><span class="s1"> not allowed in call to delete_dns_entry&#39;</span><span class="p">)</span>
         <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dnsEntry&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
                              <span class="s1">&#39;expire&#39;</span><span class="p">:</span> <span class="n">expire</span><span class="p">,</span>
-                             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+                             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">record_type</span><span class="p">,</span>
                              <span class="s1">&#39;content&#39;</span><span class="p">:</span> <span class="n">content</span><span class="p">}}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dns&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
-                      <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">204</span><span class="p">,</span> <span class="mi">403</span><span class="p">,</span> <span class="mi">404</span><span class="p">])</span>
-        <span class="k">return</span></div></div>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dns&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">body</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">204</span><span class="p">,</span> <span class="mi">403</span><span class="p">,</span> <span class="mi">404</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">http_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+            <span class="n">transip_error</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">TransIPRestRecordNotFound</span><span class="p">(</span><span class="n">errormsg</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Record not found: </span><span class="si">{transip_error}</span><span class="s1"> &#39;</span><span class="p">,</span> <span class="n">statuscode</span><span class="o">=</span><span class="n">http_code</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="TransipRestClient.get_dnssec"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.get_dnssec">[docs]</a>    <span class="k">def</span> <span class="nf">get_dnssec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;lists all DNSSEC entries for a domain once set.</span>
+
+<span class="sd">        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-dnssec-get</span>
+
+<span class="sd">        :param domain: an existing DNS domain (e.g. &#39;example.com&#39;)</span>
+<span class="sd">        :type domain: str</span>
+
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :returns:</span>
+<span class="sd">            A dictionary with the DNSSec settings for this domain</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/dnssec&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dnsSecEntries&#39;</span><span class="p">,</span> <span class="p">{})</span></div>
+
+<div class="viewcode-block" id="TransipRestClient.get_nameservers"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.get_nameservers">[docs]</a>    <span class="k">def</span> <span class="nf">get_nameservers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Lists nameservers for a domain</span>
+
+<span class="sd">        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-nameservers-get</span>
+
+<span class="sd">        :param domain: a domain that is hosted by TransIP</span>
+<span class="sd">        :type domain: str</span>
+
+<span class="sd">        :rtype: list</span>
+<span class="sd">        :returns:</span>
+<span class="sd">            A list of dicts with information about the nameservers for this domain. Note: currently only the hostnames</span>
+<span class="sd">            are returned for transip nameservers</span>
+
+<span class="sd">            example::</span>
+
+<span class="sd">                [{&#39;hostname&#39;: &#39;ns0.transip.net&#39;,</span>
+<span class="sd">                  &#39;ipv4&#39;: &#39;&#39;,</span>
+<span class="sd">                  &#39;ipv6&#39;: &#39;&#39;},</span>
+<span class="sd">                 {&#39;hostname&#39;: &#39;ns1.transip.nl&#39;,</span>
+<span class="sd">                  &#39;ipv4&#39;: &#39;&#39;,</span>
+<span class="sd">                  &#39;ipv6&#39;: &#39;&#39;},</span>
+<span class="sd">                 {&#39;hostname&#39;: &#39;ns2.transip.eu&#39;,</span>
+<span class="sd">                  &#39;ipv4&#39;: &#39;&#39;,</span>
+<span class="sd">                  &#39;ipv6&#39;: &#39;&#39;}]</span>
+
+<span class="sd">        :raise: TransIPRestDomainNotFound: when a domain is queried that is not hosted by TransIP</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/nameservers&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">http_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">TransIPRestDomainNotFound</span><span class="p">(</span><span class="n">errormsg</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;domain </span><span class="si">{domain}</span><span class="s1"> not found at TransIP)&#39;</span><span class="p">,</span> <span class="n">statuscode</span><span class="o">=</span><span class="n">http_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;nameservers&#39;</span><span class="p">,</span> <span class="p">[])</span></div>
+
+<div class="viewcode-block" id="TransipRestClient.get_domain_actions"><a class="viewcode-back" href="../../transip_rest_client.html#transip_rest_client.transip_rest_client.TransipRestClient.get_domain_actions">[docs]</a>    <span class="k">def</span> <span class="nf">get_domain_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;get current (administrative) actions on a domain</span>
+
+<span class="sd">        TransIP documentation: https://api.transip.nl/rest/docs.html#domains-actions-get</span>
+
+<span class="sd">        :param domain: an existing domain hosted by TransIP</span>
+<span class="sd">        :type domain: str</span>
+
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :returns:</span>
+<span class="sd">            A dict with the name of the action, a message and a boolean indicating the result</span>
+
+<span class="sd">            example::</span>
+
+<span class="sd">                {&#39;name&#39;: &#39;changeNameservers&#39;,</span>
+<span class="sd">                 &#39;message&#39;: &#39;success&#39;,</span>
+<span class="sd">                 &#39;hasFailed&#39;: False }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">domain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">http_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">(</span><span class="n">relative_endpoint</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;/domains/</span><span class="si">{domain}</span><span class="s1">/actions&#39;</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                           <span class="n">expected_http_codes</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span> <span class="mi">406</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;action&#39;</span><span class="p">,</span> <span class="p">[])</span></div></div>
 </pre></div>
 
           </div>

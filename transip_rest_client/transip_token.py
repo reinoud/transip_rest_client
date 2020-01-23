@@ -164,10 +164,13 @@ class TransipToken(object):
 
     def _create_signature(self):
         """ Uses the private key to sign the request body. """
-        private_key = serialization.load_pem_private_key(
-            str.encode(self._private_key),
-            password=None,
-            backend=default_backend())
+        try:
+            private_key = serialization.load_pem_private_key(
+                str.encode(self._private_key),
+                password=None,
+                backend=default_backend())
+        except ValueError:
+            raise TransipTokenGeneralException('cannot load Private Key')
         signature = private_key.sign(
             str.encode(self.request_body_string),
             padding.PKCS1v15(),
