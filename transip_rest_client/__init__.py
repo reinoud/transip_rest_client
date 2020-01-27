@@ -20,4 +20,5 @@ from transip_rest_client.transip_rest_client_exceptions import TransipRestExcept
     TransIPRestDomainNotFound, TransIPRestRecordNotFound, TransIPRestUnexpectedStatus
 from transip_rest_client.transip_token import TransipTokenGeneralException, TransipTokenPrivateKeyFormatException, \
     TransipTokenAuthorisationException
-from transip_rest_client.__version__ import __version__, __description__, __title__, __copyright__, __author__, __license__
+from transip_rest_client.__pkgmetadata__ import __version__, __description__, __title__, __copyright__, __author__, \
+    __license__

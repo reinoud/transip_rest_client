@@ -5,3 +5,4 @@ transip_rest_client/tests/auth_setup.py
 doc/html
 *.pyc
 *~
+/transip_rest_client/scmversion.py

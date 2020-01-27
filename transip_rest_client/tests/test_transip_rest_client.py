@@ -37,7 +37,6 @@ from transip_rest_client.generic_rest_client import UnknownResultException
 class TestTransipRestClient(TestCase):
     def setUp(self) -> None:
         self.transip_client = TransipRestClient(user=transipaccount, rsaprivate_key=RSAkey)
-        return
 
     def test_ping(self):
         answer = self.transip_client.ping()
@@ -48,7 +47,6 @@ class TestTransipRestClient(TestCase):
         wrongkey = RSAkey[:middle_of_key] + random_string() + RSAkey[middle_of_key:]
         with self.assertRaises(TransipTokenGeneralException):
             failing_client = TransipRestClient(user=transipaccount, rsaprivate_key=wrongkey)
-        return
 
     def test__transip_headers(self):
         headers = self.transip_client._transip_headers()
@@ -146,10 +144,6 @@ class TestTransipRestClient(TestCase):
         hostnames = [x['name'] for x in dns_entries]
         self.assertIn(hostname, hostnames,
                       msg=f"expected hostname {hostname} to be present after successfull post_dns_entry")
-
-        # post existing record; this should just return a 201
-        self.transip_client.post_dns_entry(domain=testdomain, name=hostname, expire=84600, record_type='A',
-                                           content='1.2.3.4')
 
         with self.assertRaises(TransIPRestRecordNotFound,
                                msg="expected exception TransIPRestRecordNotFound when patching a non-existing record"):

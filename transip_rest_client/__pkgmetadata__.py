@@ -15,11 +15,16 @@
 # SOFTWARE.
 #
 
+# scmversion is written by setup.py to contain the actual git tag
+try:
+    from .scmversion import __version__
+except ImportError:
+    __version__='version_UNKNOWN'
+
 # Put all metadata in a single file so it can be used both in setup and documentation
 __name__ = 'transip_rest_client'
 __title__ = 'TransIP REST API client'
 __description__ = 'a Python3 implementation for the TransIP REST API'
-__version__ = '0.1'
 __author__ = 'Startmail.com'
 __author_email__ = 'root@startmail.com'
 __copyright__ = 'Copyright 2020 Startmail.com'

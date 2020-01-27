@@ -22,7 +22,7 @@ from transip_rest_client.transip_token import TransipToken, TransipTokenPrivateK
     TransipTokenGeneralException
 from transip_rest_client.transip_rest_client_exceptions import TransipRestException, TransIPRestResponseException, \
     TransIPRestDomainNotFound, TransIPRestRecordNotFound, TransIPRestUnexpectedStatus
-from transip_rest_client.__version__ import __version__
+from transip_rest_client.__pkgmetadata__ import __version__
 
 ALLOWED_TYPES = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SRV', 'SSHFP', 'TLSA', 'CAA']
 ALLOWED_VERBS = ['get', 'post', 'patch', 'put', 'delete']
