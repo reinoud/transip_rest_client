@@ -218,21 +218,23 @@ class TestTransipRestClient(TestCase):
             self.transip_client.patch_dns_entry(domain=testdomain, name='foo', expire=84600, record_type='B',
                                                 content='1.2.3.4')
 
-    # the /domains/{domainName}/dnssec endpoint seems to be broken at TransIP
-    # 20200122 TODO: fix this when it is working at TransIP side
-    @expectedFailure
     def test_get_dnssec(self):
+        nameservers = self.transip_client.get_nameservers(testdomain)
+        transipns = False
+        for nameserver in nameservers:
+            if 'transip' in nameserver.get('hostname', ''):
+                transipns = True
+                break
+        dnssec_entries = self.transip_client.get_dnssec(testdomain)
+        if transipns:
+            # when TransIP does DNS for a TransIP-registered domain, it does not list the DNSSec info
+            self.assertEqual(len(dnssec_entries), 0,
+                             msg=f'Expected no dnssec information about TransIP hosted domain {testdomain}')
+
         dnssec_entries = self.transip_client.get_dnssec('')
         self.assertEqual(len(dnssec_entries), 0)
         dnssec_entries = self.transip_client.get_dnssec(None)
         self.assertEqual(len(dnssec_entries), 0)
-
-        # I would expect a 404 here, but TransIP returns a 500...
-        # ticket has been sent to TransIP Support
-        with self.assertRaises(UnknownResultException):
-            self.transip_client.get_dnssec(testdomain + '.invalidtld')
-        dnssec_entries = self.transip_client.get_dnssec(testdomain)
-        self.assertGreater(len(dnssec_entries), 0)
 
     def test_invalidkey(self):
         wrongkey = RSAkey[:50] + random_string() + RSAkey[60:]

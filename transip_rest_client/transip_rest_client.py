@@ -385,6 +385,9 @@ class TransipRestClient(GenericRestClient):
     def get_dnssec(self, domain: str = None) -> dict:
         """lists all DNSSEC entries for a domain once set.
 
+        Note: TransIP will not publish the details for domains that use the TransIP nameservers. This call will only
+        return results for domains that are registered at Transip, but use non-TransIP DNS.
+
         TransIP documentation: https://api.transip.nl/rest/docs.html#domains-dnssec-get
 
         :param domain: an existing DNS domain (e.g. 'example.com')
