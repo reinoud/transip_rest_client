@@ -20,7 +20,7 @@ sys.setrecursionlimit(1500)
 import transip_rest_client
 
 # -- Project information -----------------------------------------------------
-# this is put in a single source: __version__.py
+# this is put in a single source: __pkgmetadata__.py
 
 project = transip_rest_client.__title__
 copyright = transip_rest_client.__copyright__

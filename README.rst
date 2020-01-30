@@ -51,7 +51,7 @@ With the file rsaprivatekey.txt in current directory::
     client.post_dns_entry(domain='example.com', name='www', type='A', content='1.2.3.4')
 
 
-getting tests working
+getting tests to work
 ---------------------
 Since TransIP does not provide a test environment nor a key to test with, the unittests depend on your credentials and
 are not supplied. The Unittests expect a file auth_setup.py to be present in the test directory with credentials. It
