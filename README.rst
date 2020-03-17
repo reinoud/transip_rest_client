@@ -47,7 +47,7 @@ With the file rsaprivatekey.txt in current directory::
 
     with open('rsaprivatekey.txt', 'r') as f:
         my_RSA_key = f.read()
-    client = TransipRestClient(user='myaccountname', RSAprivate_key=my_RSA_key)
+    client = TransipRestClient(user='myaccountname', rsaprivate_key=my_RSA_key)
     client.post_dns_entry(domain='example.com', name='www', type='A', content='1.2.3.4')
 
 
