@@ -108,7 +108,7 @@ class TransipRestClient(GenericRestClient):
                                                         extra_headers=self._transip_headers())
         self._update_bookkeeping(headers)
 
-        if statuscode not in expected_http_codes:
+        if statuscode not in expected_http_codes or statuscode == 401:
             if statuscode == 401:
                 errormsg = json.loads(jsonstr)['error']
                 raise TransIPRestResponseException(statuscode=statuscode, errormsg=errormsg)
