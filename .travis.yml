@@ -1,0 +1,15 @@
+language: python
+cache: pip
+
+python:
+  - "3.7"
+
+install:
+ - pip install codecov
+ - pip install -e .
+
+script: 
+ - coverage run --source=. -m unittest transip_rest_client/tests/test_transip_rest_client_demoaccount.py 
+
+after_success:
+  - codecov

@@ -53,7 +53,8 @@ class TransipRestClient(GenericRestClient):
                  rsaprivate_key: str,
                  base_url: str = DEFAULT_API_URL,
                  timeout: int = 10,
-                 global_key: bool = False):
+                 global_key: bool = False,
+                 token: str = None):
         """
         :param user: accountname for TransIP
         :type user: str
@@ -69,10 +70,13 @@ class TransipRestClient(GenericRestClient):
         |
         """
 
-        try:
-            self.token = TransipToken(login=user, RSAprivate_key=rsaprivate_key, global_key=global_key)
-        except (TransipTokenPrivateKeyFormatException, TransipTokenGeneralException) as e:
-            raise TransipRestprivatekeyException(e)
+        if token is None:
+            try:
+                self.token = TransipToken(login=user, RSAprivate_key=rsaprivate_key, global_key=global_key)
+            except (TransipTokenPrivateKeyFormatException, TransipTokenGeneralException) as e:
+                raise TransipRestprivatekeyException(e)
+        else:
+            self.token = token
         super().__init__(base_url,
                          user=user,
                          timeout=timeout,
